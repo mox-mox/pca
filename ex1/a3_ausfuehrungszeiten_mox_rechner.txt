@@ -1,0 +1,58 @@
+Ausführungszeiten mit -O0
+    1                    1000
+π ≈ ∫ 4 / (1+x^2) dx  ≈   Σ   4 / (1+xi^2)*Δx = 3.14159273692312 was calculated in 36569 clock cycles on average.
+    0                    i=0
+    1                   10000
+π ≈ ∫ 4 / (1+x^2) dx  ≈   Σ   4 / (1+xi^2)*Δx = 3.14159265442323 was calculated in 322216 clock cycles on average.
+    0                    i=0
+    1                  100000
+π ≈ ∫ 4 / (1+x^2) dx  ≈   Σ   4 / (1+xi^2)*Δx = 3.14159265359889 was calculated in 3179232 clock cycles on average.
+    0                    i=0
+
+
+Ausführungszeiten mit -O1:
+    1                    1000
+π ≈ ∫ 4 / (1+x^2) dx  ≈   Σ   4 / (1+xi^2)*Δx = 3.14159273692312 was calculated in 18304 clock cycles on average.
+    0                    i=0
+    1                   10000
+π ≈ ∫ 4 / (1+x^2) dx  ≈   Σ   4 / (1+xi^2)*Δx = 3.14159265442323 was calculated in 138212 clock cycles on average.
+    0                    i=0
+    1                  100000
+π ≈ ∫ 4 / (1+x^2) dx  ≈   Σ   4 / (1+xi^2)*Δx = 3.14159265359889 was calculated in 1311575 clock cycles on average.
+    0                    i=0
+
+
+Ausführungszeiten mit -O2:
+    1                    1000
+π ≈ ∫ 4 / (1+x^2) dx  ≈   Σ   4 / (1+xi^2)*Δx = 3.14159273692312 was calculated in 18264 clock cycles on average.
+    0                    i=0
+    1                   10000
+π ≈ ∫ 4 / (1+x^2) dx  ≈   Σ   4 / (1+xi^2)*Δx = 3.14159265442323 was calculated in 137848 clock cycles on average.
+    0                    i=0
+    1                  100000
+π ≈ ∫ 4 / (1+x^2) dx  ≈   Σ   4 / (1+xi^2)*Δx = 3.14159265359889 was calculated in 1311774 clock cycles on average.
+    0                    i=0
+
+
+Ausführungszeiten mit -O3:
+    1                    1000
+π ≈ ∫ 4 / (1+x^2) dx  ≈   Σ   4 / (1+xi^2)*Δx = 3.14159273692312 was calculated in 17954 clock cycles on average.
+    0                    i=0
+    1                   10000
+π ≈ ∫ 4 / (1+x^2) dx  ≈   Σ   4 / (1+xi^2)*Δx = 3.14159265442323 was calculated in 137616 clock cycles on average.
+    0                    i=0
+    1                  100000
+π ≈ ∫ 4 / (1+x^2) dx  ≈   Σ   4 / (1+xi^2)*Δx = 3.14159265359889 was calculated in 1313120 clock cycles on average.
+    0                    i=0
+
+
+Ausführungszeiten mit -Os:
+    1                    1000
+π ≈ ∫ 4 / (1+x^2) dx  ≈   Σ   4 / (1+xi^2)*Δx = 3.14159273692312 was calculated in 17230 clock cycles on average.
+    0                    i=0
+    1                   10000
+π ≈ ∫ 4 / (1+x^2) dx  ≈   Σ   4 / (1+xi^2)*Δx = 3.14159265442323 was calculated in 136941 clock cycles on average.
+    0                    i=0
+    1                  100000
+π ≈ ∫ 4 / (1+x^2) dx  ≈   Σ   4 / (1+xi^2)*Δx = 3.14159265359889 was calculated in 1316460 clock cycles on average.
+    0                    i=0

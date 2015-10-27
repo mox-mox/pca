@@ -1,6 +1,7 @@
 // Compile with g++ -Wall -Wextra -Wpedantic -std=c++14
 #include <iostream>
 #include <iomanip>
+#include "utils.h"
 
 
 /**
@@ -44,10 +45,58 @@ int main(int argc, char** argv)
 	argc=argc;
 	argv=argv;
 
-	//
-	//    1      4
-	//    ∫ ( --------- ) dx ≈ π
-	//    0    1 + x^2
-	double pi = integrate<100000, double>( [](auto x){ return 4/(1+(x*x)); } );
-	std::cout<<"pi approximated to "<<pi<<std::endl;
+
+	uint64_t t0;
+	uint64_t t1;
+	uint64_t t_ges=0;
+
+	double pi;
+	constexpr uint32_t num_iterations = 10000;
+	std::cout<<std::setprecision (15);
+
+	for(uint32_t i=0; i<num_iterations; i++)
+	{
+		rdtsc(t0);
+		//
+		//    1      4
+		//    ∫ ( --------- ) dx ≈ π
+		//    0    1 + x^2
+		pi = integrate<1000, double>( [](auto x){ return 4/(1+(x*x)); } );
+		rdtsc(t1);
+		t_ges += t1-t0;
+	}
+	std::cout<<"    1                    1000"<<std::endl;
+	std::cout<<"π ≈ ∫ 4 / (1+x^2) dx  ≈   Σ   4 / (1+xi^2)*Δx = "<<pi<<" was calculated in "<<t_ges/num_iterations<<" clock cycles on average."<<std::endl;
+	std::cout<<"    0                    i=0"<<std::endl;
+
+	for(uint32_t i=0; i<num_iterations; i++)
+	{
+		rdtsc(t0);
+		//
+		//    1      4
+		//    ∫ ( --------- ) dx ≈ π
+		//    0    1 + x^2
+		pi = integrate<10000, double>( [](auto x){ return 4/(1+(x*x)); } );
+		rdtsc(t1);
+		t_ges += t1-t0;
+	}
+	std::cout<<"    1                   10000"<<std::endl;
+	std::cout<<"π ≈ ∫ 4 / (1+x^2) dx  ≈   Σ   4 / (1+xi^2)*Δx = "<<pi<<" was calculated in "<<t_ges/num_iterations<<" clock cycles on average."<<std::endl;
+	std::cout<<"    0                    i=0"<<std::endl;
+
+	for(uint32_t i=0; i<num_iterations; i++)
+	{
+		rdtsc(t0);
+		//
+		//    1      4
+		//    ∫ ( --------- ) dx ≈ π
+		//    0    1 + x^2
+		pi = integrate<100000, double>( [](auto x){ return 4/(1+(x*x)); } );
+		rdtsc(t1);
+		t_ges += t1-t0;
+	}
+	std::cout<<"    1                  100000"<<std::endl;
+	std::cout<<"π ≈ ∫ 4 / (1+x^2) dx  ≈   Σ   4 / (1+xi^2)*Δx = "<<pi<<" was calculated in "<<t_ges/num_iterations<<" clock cycles on average."<<std::endl;
+	std::cout<<"    0                    i=0"<<std::endl;
+
 }
