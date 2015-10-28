@@ -39,6 +39,12 @@ T integrate(T(*F)(T x), T lower_bound=0, T upper_bound=1)
 }
 
 
+// Support for the old C++11 standard, which didn't have lambda expressions
+double somefunc(double x)
+{
+	return 4/(1+x*x);
+}
+
 
 int main(int argc, char** argv)
 {
@@ -61,7 +67,8 @@ int main(int argc, char** argv)
 		//    1      4
 		//    ∫ ( --------- ) dx ≈ π
 		//    0    1 + x^2
-		pi = integrate<1000, double>( [](auto x){ return 4/(1+(x*x)); } );
+		//pi = integrate<1000, double>( [](auto x){ return 4/(1+(x*x)); } );
+		pi = integrate<1000, double>( somefunc );
 		rdtsc(t1);
 		t_ges += t1-t0;
 	}
@@ -76,7 +83,8 @@ int main(int argc, char** argv)
 		//    1      4
 		//    ∫ ( --------- ) dx ≈ π
 		//    0    1 + x^2
-		pi = integrate<10000, double>( [](auto x){ return 4/(1+(x*x)); } );
+		//pi = integrate<10000, double>( [](auto x){ return 4/(1+(x*x)); } );
+		pi = integrate<10000, double>( somefunc );
 		rdtsc(t1);
 		t_ges += t1-t0;
 	}
@@ -91,7 +99,8 @@ int main(int argc, char** argv)
 		//    1      4
 		//    ∫ ( --------- ) dx ≈ π
 		//    0    1 + x^2
-		pi = integrate<100000, double>( [](auto x){ return 4/(1+(x*x)); } );
+		//pi = integrate<100000, double>( [](auto x){ return 4/(1+(x*x)); } );
+		pi = integrate<100000, double>( somefunc );
 		rdtsc(t1);
 		t_ges += t1-t0;
 	}
