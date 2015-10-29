@@ -1,27 +1,25 @@
-// Compile with g++ -Wall -Wextra -Wpedantic -std=c++14
+// Compile with g++ a1.cpp -std=c++11 -Wall -Wextra -Wpedantic -Werror -Wfatal-errors && ./a.out
 #include "a1.hpp"
 #include <iostream>
 #include <iomanip>
 #include <cmath>
+#include <utility>
+#include <fstream>
+#include <string>
+#include <sys/stat.h>
 
 
-//#define OPTIMISE CACHE
-//#define OPTIMISE RUNTIME
 
 
-#define OPTIMISE CACHE
-
-#if !defined OPTIMISE || (OPTIMISE != CACHE) && (OPTIMISE != RUNTIME)
-	#error "Please define OPTIMISE to CACHE or RUNTIME."
-#endif
-
-
-//{{{Relaxation<N>()
+//{{{Relaxation()
 
 template < int64_t N >
 Relaxation < N > ::Relaxation(double max_theta, double phi, int64_t I, int64_t J, double R, double H) throw(std::logic_error) : max_theta(max_theta), phi(phi), I(I), J(J), R(R), H(H)
 {
-	if(R < 1) throw std::logic_error("The radius \"R\" has to be at least 1.");
+	if(R < 1)
+	{
+		throw std::logic_error("The radius \"R\" has to be at least 1.");
+	}
 	if((I < 1) || (I >= N-1) || (J < 1) || (J >= N-1))
 	{
 		throw std::logic_error("The focus of the stimulus has to be within the inner part of the grid (not on the edge).");
@@ -30,30 +28,17 @@ Relaxation < N > ::Relaxation(double max_theta, double phi, int64_t I, int64_t J
 	{
 		throw std::logic_error("The stimulated area exceeds the allowed area (the inner part of the grid, that is not the edge).");
 	}
-	if( H > max_theta) throw std::logic_error("The stimulus value \"H\" must be smaller than the maximum stimulus \"max_theta\".");
+	if( H > max_theta)
+	{
+		throw std::logic_error("The stimulus value \"H\" must be smaller than the maximum stimulus \"max_theta\".");
+	}
 
-	grid = new std::array < std::array < double, N >, N >;
 
-
-	fill_grid(&Relaxation::init_value, *grid);
+	fill_grid(&Relaxation::init_value, grid);
 }
-//}}}
-
-
-
-//template < int64_t N >
-//Relaxation < N > ::Relaxation(double R, double H) : Relaxation < N > ::Relaxation(127.0, 6.0/25.0, N/2, N/2, R, H) {};
-
-//template < int64_t N >
-//Relaxation < N > ::Relaxation(double R, double H) : Relaxation < N > ::Relaxation((127.0), (6.0/25.0), (N/2), (N/2), R, H) {};
-
-//{{{~Relaxation<N>
 
 template < int64_t N >
-Relaxation < N > ::~Relaxation()
-{
-	delete grid;
-}
+Relaxation < N > ::Relaxation(double R, double H) throw(std::logic_error) : Relaxation < N > ::Relaxation(127.0, 6.0/25.0, N/2, N/2, R, H) {}
 //}}}
 
 //{{{ fill_grid(grid_point_value_function, &grid)
@@ -135,7 +120,7 @@ double Relaxation < N > ::new_value(int64_t i, int64_t j) throw(std::logic_error
 double Relaxation < N > ::new_value(int64_t i, int64_t j)
 {
 #endif
-	double retval = (*grid)[i][j] + phi * (-4*(*grid)[i][j] + (*grid)[i+1][j] + (*grid)[i-1][j] + (*grid)[i][j+1] + (*grid)[i][j-1]);
+	double retval = grid[i][j] + phi * (-4*grid[i][j] + grid[i+1][j] + grid[i-1][j] + grid[i][j+1] + grid[i][j-1]);
 	// Implement saturation
 	if( retval < 0) retval = 0;
 	else if(retval > max_theta) retval = max_theta;
@@ -149,10 +134,9 @@ double Relaxation < N > ::new_value(int64_t i, int64_t j)
 template < int64_t N >
 void Relaxation < N > ::iterate()
 {
-	std::array < std::array < double, N >, N > *t_plus = new std::array < std::array < double, N >, N >;
-	fill_grid(&Relaxation::new_value, *t_plus);
-	delete grid;
-	grid = t_plus;
+	std::array < std::array < double, N >, N > t_plus;
+	fill_grid(&Relaxation::new_value, t_plus);
+	grid = std::move(t_plus);
 }
 //}}}
 
@@ -165,25 +149,145 @@ void Relaxation < N > ::print_grid()
 	{											// V
 		for(int64_t i=0; i < N; i++)			// ->
 		{
-			std::cout<<std::setprecision(4)<<std::setfill(' ')<<std::setw(9)<<(*grid)[i][j]<<" ";
+			std::cout<<std::setprecision(4)<<std::setfill(' ')<<std::setw(9)<<grid[i][j]<<" ";
 		}
 		std::cout<<std::endl;
 	}
 }
 //}}}
 
+//{{{ print_grid()
 
-
-int main()
+template < int64_t N >
+void Relaxation < N > ::export_data(std::ofstream& myfile)
 {
-	Relaxation < 30 > relax(127.0, 6.0/25.0, 10, 10, 7, 100);
-	relax.print_grid();
-	for( ; ; )
-	{
-		std::cout<<"Press Enter to do one more iteration, Ctrl+C to exit: "<<std::endl;
-		std::cin.get();
-		relax.iterate();
-		relax.print_grid();
+	for(int64_t j=0; j < N; j++)				// |
+	{											// V
+		for(int64_t i=0; i < N; i++)			// ->
+		{
+			myfile << std::setfill(' ') << std::setw(16) << i << " "
+			       << std::setfill(' ') << std::setw(16) << j << " "
+			       << std::setfill(' ') << std::setw(16) << grid[i][j] << std::endl;
+		}
 	}
-	return 0;
+}
+//}}}
+
+
+
+
+#ifndef BOX_SIZE
+	#error "Please define BOX_SIZE to set the size of the grid."
+#endif
+
+#include "getopt_pp.h"
+
+using namespace GetOpt;
+
+int main(int argc, char* argv[])
+{
+	int steps;
+	int radius;
+	double heat;
+	bool interactive;
+	bool timing;
+	bool export_data;
+	bool get_N;
+
+	int ret;
+
+	GetOpt_pp ops(argc, argv);
+
+	ops.exceptions(std::ios::failbit | std::ios::eofbit);
+
+	try
+	{
+		ops >> Option('s', "steps", steps, 100)
+		>> Option('r', "radius", radius, 5)
+		>> Option('h', "heat", heat, 127.0)
+		>> OptionPresent('i', "interactive", interactive)
+		>> OptionPresent('t', "timing", timing)
+		>> OptionPresent('e', "export", export_data)
+		>> OptionPresent('g', "get_N", get_N);
+
+		ret = 0;
+	}
+	catch(GetOpt::GetOptEx ex)
+	{
+		std::cerr << "Error in arguments" << std::endl;
+		std::cerr << "Usage: "<<argv[0]<<" [-s <STEPS>] [-r <RADIUS>] [-h <HEAT>] [-i]"<<std::endl;
+		ret = -1;
+	}
+
+	if(get_N)
+	{
+		return BOX_SIZE;
+	}
+
+	if(timing && interactive)
+	{
+		std::cerr<<"Trust me, there is no sense in doing interactive timing analysis.		...Aborting"<<std::endl;
+		return 1;
+	}
+
+
+
+
+	//Relaxation < 30 > relax(127.0, 6.0/25.0, 10, 10, 7, 100);
+	Relaxation < BOX_SIZE > relax(radius, heat);
+
+	if(interactive)
+	{
+		relax.print_grid();
+		for( ; ; )
+		{
+			std::cout<<"Press Enter to do one more iteration, Ctrl+C to exit: "<<std::endl;
+			std::cin.get();
+			relax.iterate();
+			relax.print_grid();
+		}
+	}
+	else if(export_data)
+	{
+
+		int length = std::to_string(steps).length();
+		std::string path="./data/";
+		struct stat info;
+		if(stat(path.c_str(), &info))
+		{
+			std::cout<<"creating folder"<<std::endl;
+			system("mkdir data");
+		}
+
+		std::ofstream data_output;
+		std::ostringstream out;
+		out << std::setfill('0') << std::setw(length) << 0;
+		data_output.open("data/iteration_" + out.str() + ".dat");
+		relax.export_data(data_output);
+		data_output.close();
+		for(int s=1; s <= steps; s++)
+		{
+			relax.iterate();
+			std::ostringstream out;
+			out << std::setfill('0') << std::setw(length) << s;
+			data_output.open("data/iteration_" + out.str() + ".dat");
+			relax.export_data(data_output);
+			data_output.close();
+		}
+	}
+	else if(timing)
+	{
+		std::cout<<"timing"<<std::endl;
+	}
+	else
+	{
+		relax.print_grid();
+		for(int s=0; s < steps; s++)
+		{
+			relax.iterate();
+			relax.print_grid();
+			std::cout<<std::endl<<std::endl;
+		}
+	}
+	return ret;
 }
