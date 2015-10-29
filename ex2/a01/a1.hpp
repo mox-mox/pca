@@ -7,12 +7,7 @@
 
 
 
-//template < int64_t N=1024 > class Relaxation;
-//
-//template < int64_t N=1024 >
-//typedef  int (Relaxation<N>::*grid_point_value_function)(double i, double j);
-
-template < int N >
+template < int64_t N >
 class Relaxation
 {
 	private:
@@ -26,10 +21,11 @@ class Relaxation
 		std::array < std::array < double, N >, N > *grid;
 	public:
 		Relaxation(double max_theta, double phi, int64_t I, int64_t J, double R, double H) throw(std::logic_error);
+		Relaxation(double R, double H) throw(std::logic_error) : Relaxation(127.0, 6.0/25.0, N/2, N/2, R, H) {};
 		~Relaxation();
 
 
-		void fill_grid(double (Relaxation<N>::*grid_point_value_function)(int64_t i, int64_t j), std::array < std::array < double, N >, N >& grid);
+		void fill_grid(double(Relaxation < N > ::*grid_point_value_function)(int64_t i, int64_t j), std::array < std::array < double, N >, N >& grid);
 
 
 #ifdef DEBUG
@@ -47,9 +43,4 @@ class Relaxation
 
 		void print_grid();
 };
-
-
-
-
-
 #endif /* A1_HPP */
