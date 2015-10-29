@@ -1,3 +1,7 @@
+##g++ -O0 -std=c++11 a3.cpp && echo "Results with -O0" >> a3_ausfuehrungszeiten_ziti.txt && ./a.out >>
+a3_ausfuehrungszeiten_ziti.txt
+
+
 Results with -O0
     1                    1000
 π ≈ ∫ 4 / (1+x^2) dx  ≈   Σ   4 / (1+xi^2)*Δx = 3.14159273692312 was calculated in 24770 clock cycles on average.
