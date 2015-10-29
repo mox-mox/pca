@@ -12,7 +12,7 @@
 //template < int64_t N=1024 >
 //typedef  int (Relaxation<N>::*grid_point_value_function)(double i, double j);
 
-template < int64_t N=1024 >
+template < int N >
 class Relaxation
 {
 	private:
@@ -29,7 +29,8 @@ class Relaxation
 		~Relaxation();
 
 
-		void fill_grid(double (*grid_point_value_function)(double i, double j), std::array < std::array < double, N >, N >& grid);
+		void fill_grid(double (Relaxation<N>::*grid_point_value_function)(int64_t i, int64_t j), std::array < std::array < double, N >, N >& grid);
+
 
 #ifdef DEBUG
 		double new_value(int64_t i, int64_t j) throw(std::logic_error);
