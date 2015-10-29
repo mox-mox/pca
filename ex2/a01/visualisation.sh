@@ -12,8 +12,7 @@ fi
 
 
 echo Cleaning old image files:
-rm ./data/iteration_*.jpeg
-rm ./data/iteration_*.dat
+make clean_visualisation
 echo "			... done"
 
 echo Generating the raw data. This might take a moment or two:
@@ -32,5 +31,5 @@ done
 
 
 echo Generating final GIF file:
-convert -delay 30 ./data/*.jpeg -loop 0 animation.gif
+convert -delay 30 ./data/*.jpeg -loop 0 relaxation.gif
 echo "			... done"

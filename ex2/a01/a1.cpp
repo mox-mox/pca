@@ -7,6 +7,7 @@
 #include <fstream>
 #include <string>
 #include <sys/stat.h>
+#include "utils.h"
 
 
 
@@ -156,7 +157,7 @@ void Relaxation < N > ::print_grid()
 }
 //}}}
 
-//{{{ print_grid()
+//{{{ export_data()
 
 template < int64_t N >
 void Relaxation < N > ::export_data(std::ofstream& myfile)
@@ -234,10 +235,11 @@ int main(int argc, char* argv[])
 
 
 	//Relaxation < 30 > relax(127.0, 6.0/25.0, 10, 10, 7, 100);
-	Relaxation < BOX_SIZE > relax(radius, heat);
+	//Relaxation < BOX_SIZE > relax(radius, heat);
 
 	if(interactive)
 	{
+		Relaxation < BOX_SIZE > relax(radius, heat);
 		relax.print_grid();
 		for( ; ; )
 		{
@@ -249,14 +251,16 @@ int main(int argc, char* argv[])
 	}
 	else if(export_data)
 	{
-
+		Relaxation < BOX_SIZE > relax(radius, heat);
+		std::cout<<"Writing raw relaxation data to files..."<<std::endl;
 		int length = std::to_string(steps).length();
 		std::string path="./data/";
 		struct stat info;
 		if(stat(path.c_str(), &info))
 		{
 			std::cout<<"creating folder"<<std::endl;
-			system("mkdir data");
+			int temp = system("mkdir data");
+			temp=temp;
 		}
 
 		std::ofstream data_output;
@@ -273,14 +277,35 @@ int main(int argc, char* argv[])
 			data_output.open("data/iteration_" + out.str() + ".dat");
 			relax.export_data(data_output);
 			data_output.close();
+			std::cout<<out.str()<<"	"<<std::flush;
 		}
+		std::cout<<std::endl<<std::endl;
 	}
 	else if(timing)
 	{
-		std::cout<<"timing"<<std::endl;
+		uint64_t t0;
+		uint64_t t1;
+		uint64_t t_ges=0;
+		std::cout<<"Timing for N = "<<BOX_SIZE<<" with "<<steps<<" iterations"<<std::endl;
+
+#define NUM_ITERATIONS 100
+		for(int i=0; i < NUM_ITERATIONS; i++)
+		{
+			rdtsc(t0);
+			Relaxation < BOX_SIZE > relax(radius, heat);
+			for(int s=1; s <= steps; s++)
+			{
+				relax.iterate();
+			}
+			rdtsc(t1);
+			t_ges += t1-t0;
+			std::cout<<"This run took "<<(t1-t0)<<" clock cycles"<<std::endl;
+		}
+		std::cout<<"Timing: Used "<<t_ges<<" clock cycles total, "<<t_ges/NUM_ITERATIONS<<" cycles per run on average. (for N = "<<BOX_SIZE<<", "<<steps<<" iterations)"<<std::endl;
 	}
 	else
 	{
+		Relaxation < BOX_SIZE > relax(radius, heat);
 		relax.print_grid();
 		for(int s=0; s < steps; s++)
 		{
