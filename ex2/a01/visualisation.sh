@@ -16,7 +16,7 @@ make clean_visualisation
 echo "			... done"
 
 echo Generating the raw data. This might take a moment or two:
-./relaxation -e -s $2
+./relaxation -e -s $2 -r $(($1 / 4))  
 echo "			... done"
 
 width=$2
