@@ -30,3 +30,6 @@
 # The worksheets (for which I don't hold the copyright
 pca_[0-9][0-9].pdf
 uebung[0-9][0-9].pdf
+
+# My files
+Session.vim

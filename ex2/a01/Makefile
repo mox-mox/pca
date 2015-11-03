@@ -1,13 +1,14 @@
 
 
-BOX_SIZE ?= 30
-STEPS ?= 100
+BOX_SIZE ?= 100
+STEPS ?= 200
+OPT ?= 3
 
 CXXFLAGS += -DDEBUG
 CXXFLAGS += -DOPTIMISE=CACHE
 CXXFLAGS += -DBOX_SIZE=$(BOX_SIZE)
 CXXFLAGS += -std=c++11 -Wall -Wextra -Wpedantic -Werror -Wfatal-errors
-CXXFLAGS += -O3
+CXXFLAGS += -O${OPT}
 
 SOURCES := a1.cpp getopt_pp.cpp
 

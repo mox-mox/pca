@@ -216,7 +216,16 @@ int main(int argc, char* argv[])
 	catch(GetOpt::GetOptEx ex)
 	{
 		std::cerr << "Error in arguments" << std::endl;
-		std::cerr << "Usage: "<<argv[0]<<" [-s <STEPS>] [-r <RADIUS>] [-h <HEAT>] [-i]"<<std::endl;
+		std::cerr << "Usage: "<<argv[0]<<" [options]"<<std::endl;
+		std::cerr << "Options:"<<std::endl;
+		// War diese einfache Dokumentation soo viel verlangt, Dennis?
+		std::cerr << "-s <NUM>: Set the number of simulation steps."<<std::endl;
+		std::cerr << "-r <NUM>: Set the radius of the stimuli."<<std::endl;
+		std::cerr << "-h <NUM>: Set the heat of the stimuli."<<std::endl;
+		std::cerr << "-i      : Interactive mode: Press enter and watch the simulation in the console."<<std::endl;
+		std::cerr << "-t      : Do a timing run. There won't be much output except the timing results."<<std::endl;
+		std::cerr << "-e      : Export data to files in ./data. Used by the visualisation target in the makefile."<<std::endl;
+		std::cerr << "-g      : Return the \"N\" parameter and exit. This is used to know if the file has to be recompiled."<<std::endl;
 		ret = -1;
 	}
 
@@ -234,8 +243,6 @@ int main(int argc, char* argv[])
 
 
 
-	//Relaxation < 30 > relax(127.0, 6.0/25.0, 10, 10, 7, 100);
-	//Relaxation < BOX_SIZE > relax(radius, heat);
 
 	if(interactive)
 	{
@@ -303,16 +310,6 @@ int main(int argc, char* argv[])
 		}
 		std::cout<<"Timing: Used "<<t_ges<<" clock cycles total, "<<t_ges/NUM_ITERATIONS<<" cycles per run on average. (for N = "<<BOX_SIZE<<", "<<steps<<" iterations)"<<std::endl;
 	}
-	else
-	{
-		Relaxation < BOX_SIZE > relax(radius, heat);
-		relax.print_grid();
-		for(int s=0; s < steps; s++)
-		{
-			relax.iterate();
-			relax.print_grid();
-			std::cout<<std::endl<<std::endl;
-		}
-	}
+
 	return ret;
 }
