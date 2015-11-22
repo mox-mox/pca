@@ -1,11 +1,12 @@
+/**
+ * This is an implementation of a fixed size vector supporting the neccesary operations for vector algebra.
+ */
 #pragma once
 #include <iomanip>
-#include <initializer_list>	// std::initializer_list
+#include <initializer_list>
 #include <algorithm>
 
 
-namespace vectmath
-{
 	template < typename data_t >
 	class Vector
 	{
@@ -13,7 +14,7 @@ namespace vectmath
 			size_t size;
 			data_t* data;
 			using iterator = data_t*;
-			using const_iterator = const data_t*;
+			//using const_iterator = const data_t*;
 		public:
 			//{{{ Constructors
 
@@ -29,8 +30,8 @@ namespace vectmath
 
 			iterator begin(void) const;
 			iterator end(void) const;
-			const_iterator cbegin(void) const;
-			const_iterator cend(void) const;
+			//const_iterator cbegin(void) const;
+			//const_iterator cend(void) const;
 			//}}}
 
 			//{{{ Operators
@@ -39,16 +40,20 @@ namespace vectmath
 			data_t& operator[] (const unsigned int idx);
 			const data_t& operator[] (const unsigned int idx) const;
 			Vector& operator+=(const Vector &other);
+			Vector& operator-=(const Vector &other);
+
+			//{{{ Friend operators
+
+			template < typename data_tt > friend std::ostream& operator<< (std::ostream& stream, Vector < data_tt > const& vec);
+			template < typename data_tt > friend data_tt operator*(const Vector<data_tt>& first, const Vector<data_tt>& second);
+			template < typename data_tt > friend data_tt operator+(const Vector<data_tt> first, const Vector<data_tt>& second);
+			template < typename data_tt > friend data_tt operator-(const Vector<data_tt> first, const Vector<data_tt>& second);
+			//}}}
 			//}}}
 
-
 			//{{{ Friends
-			template < typename data_tt >
-			friend void swap(Vector < data_tt >& first, Vector < data_tt >& second);
-			template < typename data_tt >
-			friend data_tt operator*(const Vector<data_tt>& first, const Vector<data_tt>& second);
-			template < typename data_tt >
-			friend std::ostream& operator<< (std::ostream& stream, Vector < data_tt > const& vect);
+
+			template < typename data_tt > friend void swap(Vector < data_tt >& first, Vector < data_tt >& second);
 			//}}}
 	};
 
@@ -58,7 +63,7 @@ namespace vectmath
 //{{{    Vector(size_t size)
 
 	template < typename data_t >
-	Vector < data_t > ::Vector(size_t size) : size(size), data(size ? new data_t[size] : 0)
+	Vector < data_t > ::Vector(size_t size) : size(size), data(size ? new data_t[size] : nullptr)
 	{
 		for(data_t& it : *this)
 		{
@@ -69,7 +74,7 @@ namespace vectmath
 //{{{    Vector(size_t size, data_t initial_value)
 
 	template < typename data_t >
-	Vector < data_t > ::Vector(size_t size, data_t initial_value) : size(size), data(size ? new data_t[size] : 0)
+	Vector < data_t > ::Vector(size_t size, data_t initial_value) : size(size), data(size ? new data_t[size] : nullptr)
 	{
 		for(data_t& it : *this)
 		{
@@ -80,7 +85,7 @@ namespace vectmath
 //{{{    Vector(initializer_list il)
 
 	template < typename data_t >
-	Vector < data_t > ::Vector(std::initializer_list < data_t > il) : size(il.size()), data(size ? new data_t[size] : 0)
+	Vector < data_t > ::Vector(std::initializer_list < data_t > il) : size(il.size()), data(size ? new data_t[size] : nullptr)
 	{
 		std::copy(il.begin(), il.end(), this->begin());
 	}
@@ -88,7 +93,7 @@ namespace vectmath
 //{{{    Vector(const Vector& other)
 
 	template < typename data_t >
-	Vector < data_t > ::Vector(const Vector &other) : size(other.size), data(size ? new data_t[size] : 0)
+	Vector < data_t > ::Vector(const Vector &other) : size(other.size), data(size ? new data_t[size] : nullptr)
 	{
 		std::copy(other.begin(), other.end(), this->begin());
 	}
@@ -127,22 +132,22 @@ namespace vectmath
 		return &data[size];
 	}
 //}}}
-//{{{    Vector::cbegin()
-
-	template < typename data_t >
-	typename Vector < data_t > ::const_iterator Vector < data_t > ::cbegin(void) const
-	{
-		return data;
-	}
-//}}}
-//{{{    Vector::cend()
-
-	template < typename data_t >
-	typename Vector < data_t > ::const_iterator Vector < data_t > ::cend(void) const
-	{
-		return &data[size];
-	}
-//}}}
+////{{{    Vector::cbegin()
+//
+//	template < typename data_t >
+//	typename Vector < data_t > ::const_iterator Vector < data_t > ::cbegin(void) const
+//	{
+//		return data;
+//	}
+////}}}
+////{{{    Vector::cend()
+//
+//	template < typename data_t >
+//	typename Vector < data_t > ::const_iterator Vector < data_t > ::cend(void) const
+//	{
+//		return &data[size];
+//	}
+////}}}
 
 
 //{{{    Vector::operator=(Vector other)
@@ -188,21 +193,20 @@ namespace vectmath
 		return *this;
 	}
 //}}}
-
-
-//{{{  data_t operator*(Vector& first, Vector& second)
+//{{{    Vector::operator-=(Vector other)
 
 	template < typename data_t >
-	data_t operator*(const Vector<data_t>& first, const Vector<data_t>& second)
+	Vector < data_t >& Vector < data_t > ::operator-=(const Vector &other)
 	{
 #ifdef DEBUG
-		if(first.size != second.size) throw std::logic_error("Trying to multiply vectors of different sizes.");
+		if(other.size != size) throw std::logic_error("Trying to add vectors of different sizes.");
 #endif
-		data_t retval=0;
-		for(unsigned int i=0; i<first.size;i++) retval+=first[i]*second[i];
-		return retval;
+		std::transform(other.begin(), other.end(), this->begin(), this->begin(), std::minus < data_t > ());
+		return *this;
 	}
 //}}}
+
+
 //{{{  void swap(Vector& first, Vector& second)
 
 	template < typename data_t >
@@ -228,15 +232,32 @@ namespace vectmath
 		return stream;
 	}
 //}}}
+//{{{  data_t operator*(Vector& first, Vector& second)
 
+	template < typename data_t >
+	data_t operator*(const Vector<data_t>& first, const Vector<data_t>& second)
+	{
+#ifdef DEBUG
+		if(first.size != second.size) throw std::logic_error("Trying to multiply vectors of different sizes.");
+#endif
+		data_t retval=0;
+		for(unsigned int i=0; i<first.size;i++) retval+=first[i]*second[i];
+		return retval;
+	}
+//}}}
+//{{{  data_t operator+(Vector first, Vector& second)
 
+	template < typename data_t >
+	data_t operator+(const Vector<data_t> first, const Vector<data_t>& second) // First is not a reference because we need a temporary object anyways.
+	{
+		return first+=second;
+	}
+//}}}
+//{{{  data_t operator-(Vector first, Vector& second)
 
-
-
-
-
-
-
-
-
-}	/* namespace vectmath */
+	template < typename data_t >
+	data_t operator-(const Vector<data_t> first, const Vector<data_t>& second) // First is not a reference because we need a temporary object anyways.
+	{
+		return first-=second;
+	}
+//}}}

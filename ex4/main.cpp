@@ -3,6 +3,7 @@
 #include "getopt_pp.hpp"
 #include <ctime>
 #include "vectmath_vector.hpp"
+#include "vectmath_matrix.hpp"
 
 
 
@@ -46,25 +47,33 @@ int main(int argc, char** argv)
 
 
 
-	vectmath::Vector<double> v0;
-	std::cout<<"v0: "<<v0<<"asfdadsf"<<std::endl;
-	vectmath::Vector<double> v1(dimensions);
-	std::cout<<"v1: "<<v1<<std::endl;
+	//vectmath::Vector<double> v0;
+	//std::cout<<"v0: "<<v0<<"asfdadsf"<<std::endl;
+	//vectmath::Vector<double> v1(dimensions);
+	//std::cout<<"v1: "<<v1<<std::endl;
 
-	vectmath::Vector<double> v2 { 10, 9, 8, 7, 5, 4, 3, 2, 1, 0 };
-	std::cout<<"v2: "<<v2<<std::endl;
-	vectmath::Vector<double> v3(v2);
-	std::cout<<"v3: "<<v2<<std::endl;
-	v2+=v3;
-	std::cout<<"v2: "<<v2<<std::endl;
+	//vectmath::Vector<double> v2 { 10, 9, 8, 7, 5, 4, 3, 2, 1, 0 };
+	//std::cout<<"v2: "<<v2<<std::endl;
+	//vectmath::Vector<double> v3(v2);
+	//std::cout<<"v3: "<<v2<<std::endl;
+	//v2+=v3;
+	//std::cout<<"v2: "<<v2<<std::endl;
 
-	vectmath::Vector<double> v4 { 2, 1, 0 };
-	std::cout<<"v4: "<<v4<<std::endl;
-	vectmath::Vector<double> v5 { 4, 2, 5 };
-	std::cout<<"v5: "<<v5<<std::endl;
+	//vectmath::Vector<double> v4 { 2, 1, 0 };
+	//std::cout<<"v4: "<<v4<<std::endl;
+	//vectmath::Vector<double> v5 { 4, 2, 5 };
+	//std::cout<<"v5: "<<v5<<std::endl;
 
-	std::cout<<"v4*v5 = "<<v4*v5<<std::endl;
+	//std::cout<<"v4*v5 = "<<v4*v5<<std::endl;
 
+
+	Matrix<double> m0(5, 6);
+	std::cout<<"fooooooooooooooooooooooooooo"<<std::endl;
+	std::cout<<"fooooooooooooooooooooooooooo"<<std::endl;
+	std::cout<<"fooooooooooooooooooooooooooo"<<std::endl;
+	std::cout<<"fooooooooooooooooooooooooooo"<<std::endl;
+	std::cout<<"fooooooooooooooooooooooooooo"<<std::endl;
+	std::cout<<"m0: "<<m0<<std::endl;
 
 
 
