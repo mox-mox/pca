@@ -12,13 +12,14 @@
 //#define size 5
 int main()
 {
+	std::cout<<"asfasdfasfasdfasdf"<<std::endl;
 	std::srand(std::time(0));		// use current time as seed for random generator
 
 	Matrix m1(size, true);
 	Matrix m2(size, true);
 
 #ifdef OPTIMISE_TRANSPOSE
-#pragma message"Using transposed optimisation."
+//#pragma message"Using transposed optimisation."
 	m2.transpose();
 #else
 #pragma message"NOT using transposed optimisation."

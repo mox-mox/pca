@@ -6,7 +6,7 @@ OPTIMISE_TRANSPOSE=1
 
 
 
-
+#
 ifeq ($(OPTIMISE_TRANSPOSE),1)
 	DEFS		+= -DOPTIMISE_TRANSPOSE
 endif
@@ -25,15 +25,10 @@ endif
 
 
 
-UART_SPEED = 460800
-
-
-
 ###############################################################################
 #Where to build the project
 
-BUILDDIRPREFIX ::= build
-BUILDDIR ::= $(BUILDDIRPREFIX)_for_flash_run
+BUILDDIR ::= builddir
 
 # A macro to create neccesary directories
 DIR_GUARD = @mkdir -p $(@D)
@@ -54,29 +49,33 @@ SOURCE_FILES := $(realpath $(filter %.c %.cpp %.cxx %.c++, $(call dirwild, $(str
 OBJS ::= $(patsubst %.cpp,%.o,$(filter %.cpp, $(SOURCE_FILES)))
 OBJS ::= $(addprefix $(BUILDDIR)/,$(OBJS))
 
+#OBJS = builddir//tmp/asd-mox/home/mox/uni/s9/pca/pca/ex4/matrix.o builddir//tmp/asd-mox/home/mox/uni/s9/pca/pca/ex4/main.o
+
+
 ###############################################################################
 # Executables
 
 
 CXX				:= g++
 LD				:= g++
+OBJDUMP			:= objdump
+SIZE			:= size
 
 
-###############################################################################
-# Used libraries
-
-LDLIBS		+= $(addprefix -l,$(patsubst lib%,%,$(basename $(notdir $(LIBS)))))
-#LDLIBS		+= -Wl,--start-group -lc -lgcc -lnosys -Wl,--end-group
-
-###############################################################################
+################################################################################
+## Used libraries
+#
+#LDLIBS		+= $(addprefix -l,$(patsubst lib%,%,$(basename $(notdir $(LIBS)))))
+##LDLIBS		+= -Wl,--start-group -lc -lgcc -lnosys -Wl,--end-group
+#
+################################################################################
 # C & C++ common flags
 
 #Note: -isystem cannot be used with C++ files, because it implicitly adds extern "C" to each file :(
-COMMONFLAGS	+= -Os -ggdb -Wshadow -DUART_SPEED=$(UART_SPEED) $(DEFS)
+COMMONFLAGS	+= -Os -ggdb -Wshadow $(DEFS)
 COMMONFLAGS	+= -Wall -Wextra -Wpedantic -Werror -Wfatal-errors -Wredundant-decls
 COMMONFLAGS	+= -fno-common -ffunction-sections -fdata-sections
-COMMONFLAGS	+= -MD -Wundef -DSTM32F4
-COMMONFLAGS	+= -Wfatal-errors
+COMMONFLAGS	+= -MD -Wundef
 COMMONFLAGS	+= -Wno-packed-bitfield-compat # TODO: Remove this
 COMMONFLAGS += -Wno-unused-function
 #COMMONFLAGS	+= -Wpadded -Winline
@@ -93,13 +92,13 @@ CXXFLAGS	+= $(COMMONFLAGS)  -std=gnu++14# -Weffc++
 ###############################################################################
 # Linker flags
 
-LDFLAGS		+= $(addprefix -L, $(dir $(LIBS)))
-LDFLAGS		+= -L..
-LDFLAGS		+= -Wl,-Map=$(BUILDDIR)/$(*).map
-LDFLAGS		+= -Wl,--gc-sections
-ifeq ($(V),99)
-LDFLAGS		+= -Wl,--print-gc-sections
-endif
+##LDFLAGS		+= $(addprefix -L, $(dir $(LIBS)))
+##LDFLAGS		+= -L..
+##LDFLAGS		+= -Wl,-Map=$(BUILDDIR)/$(*).map
+##LDFLAGS		+= -Wl,--gc-sections
+##ifeq ($(V),99)
+##LDFLAGS		+= -Wl,--print-gc-sections
+##endif
 
 ###############################################################################
 # Calculate the percentage for progress indication
@@ -111,30 +110,25 @@ ifneq ($(words $(MAKECMDGOALS)),1)
 	@ #$(MAKE) $@ --no-print-directory -rRf $(firstword $(MAKEFILE_LIST))
 else
 ifndef ECHO
-T := $(shell $(MAKE) $(MAKECMDGOALS) --no-print-directory \
-	-nrRf $(firstword $(MAKEFILE_LIST)) \
-	ECHO="COUNTTHIS" | grep -c "COUNTTHIS")
+T := $(shell $(MAKE) $(MAKECMDGOALS) --no-print-directory  -nrf $(firstword $(MAKEFILE_LIST))  ECHO="COUNTTHIS" | grep -c "COUNTTHIS")
 
 N := x
 C = $(words $N)$(eval N := x $N)
 ECHO = "		`expr " [\`expr $C '*' 100 / $T\`" : '.*\(....\)$$'`%]"
 endif
 
-###############################################################################
+################################################################################
 ###############################################################################
 ###############################################################################
 
-.PHONY: images clean stylecheck styleclean elf hex srec list
-.SUFFIXES: .elf .hex .srec .list .map .images
-.SECONDEXPANSION:
-.SECONDARY:
+#.PHONY: images clean stylecheck styleclean prog
+#.SUFFIXES: .list .map .images
+#.SECONDEXPANSION:
+#.SECONDARY:
 
-all: begin elf hex srec list
+all: begin prog
 
-elf: $(BUILDDIR)/$(BINARY).elf
-hex: $(BUILDDIR)/$(BINARY).hex
-srec: $(BUILDDIR)/$(BINARY).srec
-list: $(BUILDDIR)/$(BINARY).list
+prog: $(BUILDDIR)/$(BINARY).elf
 
 compilerversion = $(shell $(CC) --version | head -n1)
 
@@ -147,25 +141,18 @@ begin:
 	@echo -e "The Compiler in use: $(compilerversion)"
 	@echo -e "\n###################################################################################################################################\n"
 
-
-$(BUILDDIR)/%.hex $(BUILDDIR)/%.srec $(BUILDDIR)/%.list: $(BUILDDIR)/%.elf
-	@echo -e "\n$(ECHO)----Creating final output files $(*).hex $(*).srec and $(*).list"
-	$(DIR_GUARD)
-	$(Q)$(OBJCOPY) -R .sdram -Oihex $< $(BUILDDIR)/$(*).hex
-	$(Q)$(OBJCOPY) -Osrec $< $(BUILDDIR)/$(*).srec
-	$(Q)$(OBJDUMP) -S $< > $(BUILDDIR)/$(*).list
-	@echo -e "\n###################################################################################################################################\n"
-	@echo -e "Finishing build. The sizes of the output file chunks:"
-	$(Q)$(SIZE) $<
-	@echo -e "\n###################################################################################################################################\n"
-
-$(BUILDDIR)/%.elf $(BUILDDIR)/%.map: $(OBJS)  $(LIBS)
+:wa
+$(BUILDDIR)/$(BINARY).elf: $(OBJS)
 	@echo -e  "\n$(ECHO)----Linking $^ to $@"
 	$(DIR_GUARD)
-	$(Q)$(LD) $(LDFLAGS) $(OBJS) $(LDLIBS) -o $(BUILDDIR)/$(*).elf
+	$(Q)$(LD) $(LDFLAGS) $(OBJS) $(LDLIBS) -o $@
+	$(Q)$(OBJDUMP) -S $@ > $(@).list
+	@echo -e "\n###################################################################################################################################\n"
+	@echo -e "Finishing build. The sizes of the output file chunks:"
+	$(Q)$(SIZE) $@
+	@echo -e "\n###################################################################################################################################\n"
 
-
-$(BUILDDIR)/%.o: %.cpp $(LIBS)
+$(BUILDDIR)/%.o: %.cpp
 	@echo -e  "\n$(ECHO)----Compiling C++-file $< to $@"
 	$(DIR_GUARD)
 	$(Q)$(CXX) $(CXXFLAGS) -o $@ -c $<
@@ -173,9 +160,9 @@ $(BUILDDIR)/%.o: %.cpp $(LIBS)
 
 
 
-$(BUILDDIR):
-	@echo -e "\n$(ECHO)----Creating build directory $@"
-	mkdir -p $@
+#$(BUILDDIR):
+#	@echo -e "\n$(ECHO)----Creating build directory $@"
+#	mkdir -p $@
 
 .PHONY: clean
 clean:
