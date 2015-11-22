@@ -22,7 +22,7 @@ namespace vectmath
 
 			Vector(size_t size=0);									// Fill with pseudo-random numbers
 			Vector(size_t size, data_t initial_value);				// Fill with initial_value
-			Vector(std::initializer_list < data_t > il);			// Fill with initialiser list
+			Vector(const std::initializer_list < data_t >& il);		// Fill with initialiser list
 			Vector(const Vector &other);							// Copy another Vector
 			Vector(Vector && other);								// Move from another Vector
 			~Vector();
@@ -87,7 +87,7 @@ namespace vectmath
 //{{{    Vector(initializer_list il)
 
 	template < typename data_t >
-	Vector < data_t > ::Vector(std::initializer_list < data_t > il) : size(il.size()), data(size ? new data_t[size] : nullptr)
+	Vector < data_t > ::Vector(const std::initializer_list < data_t >& il) : size(il.size()), data(size ? new data_t[size] : nullptr)
 	{
 		std::copy(il.begin(), il.end(), this->begin());
 	}
@@ -113,7 +113,7 @@ namespace vectmath
 	template < typename data_t >
 	Vector < data_t > ::~Vector()
 	{
-		std::cout<<"Destroying Vector "<<this<<std::endl;
+		//std::cout<<"Destroying Vector "<<this<<std::endl;
 		delete[]  data;
 	}
 //}}}
@@ -215,9 +215,9 @@ namespace vectmath
 	template < typename data_t >
 	void swap(Vector < data_t >& first, Vector < data_t > second)
 	{
-		using std::swap;
-		swap(first.size, second.size);
-		swap(first.data, second.data);
+		//using std::swap;
+		std::swap(first.size, second.size);
+		std::swap(first.data, second.data);
 	}
 //}}}
 //{{{  operator<< (ostream lhs, Vector rhs)

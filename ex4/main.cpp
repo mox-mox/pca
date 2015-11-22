@@ -47,17 +47,17 @@ int main(int argc, char** argv)
 
 
 
-	{
-	vectmath::Vector<double> v0;
-	std::cout<<"v0: "<<v0<<"asfdadsf"<<std::endl;
-	}
+	//{
+	//	vectmath::Vector < double > v0;
+	//	std::cout<<"v0: "<<v0<<"asfdadsf"<<std::endl;
+	//}
 	//vectmath::Vector<double> v1(dimensions);
 	//std::cout<<"v1: "<<v1<<std::endl;
 
-	//vectmath::Vector<double> v2 { 10, 9, 8, 7, 5, 4, 3, 2, 1, 0 };
-	//std::cout<<"v2: "<<v2<<std::endl;
-	//vectmath::Vector<double> v3(v2);
-	//std::cout<<"v3: "<<v2<<std::endl;
+	vectmath::Vector<double> v2 { 10, 9, 8, 7, 5, 4, 3, 2, 1, 0 };
+	std::cout<<"v2: "<<v2<<std::endl;
+	vectmath::Vector<double> v3(v2);
+	std::cout<<"v3: "<<v2<<std::endl;
 	//v2+=v3;
 	//std::cout<<"v2: "<<v2<<std::endl;
 
@@ -69,17 +69,28 @@ int main(int argc, char** argv)
 	//std::cout<<"v4*v5 = "<<v4*v5<<std::endl;
 
 
+	//{
+	//	std::cout<<"fooooooooooooooooooooooooooo"<<std::endl;
+	//	std::cout<<"fooooooooooooooooooooooooooo"<<std::endl;
+	//	vectmath::Matrix < double > m0(20, 15);
+	//	std::cout<<"fooooooooooooooooooooooooooo"<<std::endl;
+	//	std::cout<<"fooooooooooooooooooooooooooo"<<std::endl;
+	//	std::cout<<"m0: "<<m0<<std::endl;
+	//	std::cout<<"fooooooooooooooooooooooooooo"<<std::endl;
+	//	std::cout<<"fooooooooooooooooooooooooooo"<<std::endl;
+	//}
+
 	{
-	std::cout<<"fooooooooooooooooooooooooooo"<<std::endl;
-	std::cout<<"fooooooooooooooooooooooooooo"<<std::endl;
-	vectmath::Matrix<double> m0(20, 15);
-	std::cout<<"fooooooooooooooooooooooooooo"<<std::endl;
-	std::cout<<"fooooooooooooooooooooooooooo"<<std::endl;
-	std::cout<<"m0: "<<m0<<std::endl;
-	std::cout<<"fooooooooooooooooooooooooooo"<<std::endl;
-	std::cout<<"fooooooooooooooooooooooooooo"<<std::endl;
+		vectmath::Matrix<double> m1{ {1,2,3}, {4,5,6}, {7,8,9}};
+		std::cout<<"m1: "<<m1<<std::endl;
 	}
 
+	{
+		vectmath::Matrix < double > m2(20, 15);
+		vectmath::Matrix < double > m3(m2);
+		std::cout<<"m2: "<<m2<<std::endl;
+		std::cout<<"m3: "<<m3<<std::endl;
+	}
 
 
 
@@ -109,6 +120,5 @@ int main(int argc, char** argv)
 //	std::cout<<"Calculated in "<<t<<" clicks ("<<static_cast < double > (t)/CLOCKS_PER_SEC<<"s)."<<std::endl;
 //
 
-	return 0;
-}
-
+		return 0;
+	}
