@@ -47,8 +47,10 @@ int main(int argc, char** argv)
 
 
 
-	//vectmath::Vector<double> v0;
-	//std::cout<<"v0: "<<v0<<"asfdadsf"<<std::endl;
+	{
+	vectmath::Vector<double> v0;
+	std::cout<<"v0: "<<v0<<"asfdadsf"<<std::endl;
+	}
 	//vectmath::Vector<double> v1(dimensions);
 	//std::cout<<"v1: "<<v1<<std::endl;
 
@@ -67,13 +69,16 @@ int main(int argc, char** argv)
 	//std::cout<<"v4*v5 = "<<v4*v5<<std::endl;
 
 
-	Matrix<double> m0(5, 6);
+	{
 	std::cout<<"fooooooooooooooooooooooooooo"<<std::endl;
 	std::cout<<"fooooooooooooooooooooooooooo"<<std::endl;
-	std::cout<<"fooooooooooooooooooooooooooo"<<std::endl;
+	vectmath::Matrix<double> m0(20, 15);
 	std::cout<<"fooooooooooooooooooooooooooo"<<std::endl;
 	std::cout<<"fooooooooooooooooooooooooooo"<<std::endl;
 	std::cout<<"m0: "<<m0<<std::endl;
+	std::cout<<"fooooooooooooooooooooooooooo"<<std::endl;
+	std::cout<<"fooooooooooooooooooooooooooo"<<std::endl;
+	}
 
 
 

@@ -7,6 +7,8 @@
 #include <algorithm>
 
 
+namespace vectmath
+{
 	template < typename data_t >
 	class Vector
 	{
@@ -111,6 +113,7 @@
 	template < typename data_t >
 	Vector < data_t > ::~Vector()
 	{
+		std::cout<<"Destroying Vector "<<this<<std::endl;
 		delete[]  data;
 	}
 //}}}
@@ -261,3 +264,4 @@
 		return first-=second;
 	}
 //}}}
+}	/* namespace vectmath */
