@@ -45,12 +45,8 @@ VPATH ::= $(CURDIR)
 dirwild = $(foreach f,$(wildcard $1*),$(call dirwild,$f/) $f)
 SOURCE_FILES := $(realpath $(filter %.c %.cpp %.cxx %.c++, $(call dirwild, $(strip $(subst :, ,$(VPATH))))))
 
-
 OBJS ::= $(patsubst %.cpp,%.o,$(filter %.cpp, $(SOURCE_FILES)))
 OBJS ::= $(addprefix $(BUILDDIR)/,$(OBJS))
-
-#OBJS = builddir//tmp/asd-mox/home/mox/uni/s9/pca/pca/ex4/matrix.o builddir//tmp/asd-mox/home/mox/uni/s9/pca/pca/ex4/main.o
-
 
 ###############################################################################
 # Executables
@@ -63,16 +59,17 @@ SIZE			:= size
 
 
 ################################################################################
-## Used libraries
-#
-#LDLIBS		+= $(addprefix -l,$(patsubst lib%,%,$(basename $(notdir $(LIBS)))))
-##LDLIBS		+= -Wl,--start-group -lc -lgcc -lnosys -Wl,--end-group
-#
+# Used libraries
+
+#LDLIBS		+= -Wl,--start-group -lc -lgcc -lnosys -Wl,--end-group
+LDLIBS		+= -pthread
+
 ################################################################################
 # C & C++ common flags
 
 #Note: -isystem cannot be used with C++ files, because it implicitly adds extern "C" to each file :(
-COMMONFLAGS	+= -Os -ggdb -Wshadow $(DEFS)
+#COMMONFLAGS	+= -Os -ggdb -Wshadow $(DEFS)
+COMMONFLAGS	+= -Os -ggdb $(DEFS)
 COMMONFLAGS	+= -Wall -Wextra -Wpedantic -Werror -Wfatal-errors -Wredundant-decls
 COMMONFLAGS	+= -fno-common -ffunction-sections -fdata-sections
 COMMONFLAGS	+= -MD -Wundef
@@ -92,13 +89,10 @@ CXXFLAGS	+= $(COMMONFLAGS)  -std=gnu++14# -Weffc++
 ###############################################################################
 # Linker flags
 
-##LDFLAGS		+= $(addprefix -L, $(dir $(LIBS)))
-##LDFLAGS		+= -L..
-##LDFLAGS		+= -Wl,-Map=$(BUILDDIR)/$(*).map
-##LDFLAGS		+= -Wl,--gc-sections
-##ifeq ($(V),99)
-##LDFLAGS		+= -Wl,--print-gc-sections
-##endif
+LDFLAGS		+= $(addprefix -L, $(dir $(LIBS)))
+LDFLAGS		+= -L..
+LDFLAGS		+= -Wl,-Map=$(@).map
+DFLAGS		+= -Wl,--gc-sections
 
 ###############################################################################
 # Calculate the percentage for progress indication
@@ -121,10 +115,6 @@ endif
 ###############################################################################
 ###############################################################################
 
-#.PHONY: images clean stylecheck styleclean prog
-#.SUFFIXES: .list .map .images
-#.SECONDEXPANSION:
-#.SECONDARY:
 
 all: begin prog
 
@@ -141,7 +131,6 @@ begin:
 	@echo -e "The Compiler in use: $(compilerversion)"
 	@echo -e "\n###################################################################################################################################\n"
 
-:wa
 $(BUILDDIR)/$(BINARY).elf: $(OBJS)
 	@echo -e  "\n$(ECHO)----Linking $^ to $@"
 	$(DIR_GUARD)
