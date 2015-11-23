@@ -9,8 +9,8 @@
 #include <memory>
 
 
-//namespace vectmath
-//{
+namespace vectmath
+{
 	template < typename data_t >
 	class Matrix
 	{
@@ -41,23 +41,15 @@
 
 			//{{{ Operators
 
-			Matrix& operator=(Matrix other);
-			Vector<data_t>& operator[] (const unsigned int idx);
-			const Vector<data_t>& operator[] (const unsigned int idx) const;
-			Matrix& operator+=(const Matrix &other);
-			Matrix& operator-=(const Matrix &other);
-
-			//{{{ Friend operators
-
-			template < typename data_tt > friend std::ostream& operator<< (std::ostream& stream, Matrix < data_tt > const& mat);
-			template < typename data_tt > friend data_tt operator*(const Vector < data_tt > &first, const Vector < data_tt > &second);
-			template < typename data_tt > friend data_tt operator+(const Vector < data_tt > first, const Vector < data_tt > &second);
-			template < typename data_tt > friend data_tt operator-(const Vector < data_tt > first, const Vector < data_tt > &second);
-			//}}}
+			Matrix&               operator= (Matrix other);
+			Vector<data_t>&       operator[](const unsigned int idx);
+			const Vector<data_t>& operator[](const unsigned int idx) const;
+			Matrix&               operator+=(const Matrix &other);
+			Matrix&               operator-=(const Matrix &other);
 			//}}}
 
-			size_t rows(void) const;
-			size_t columns(void) const;
+			inline size_t rows(void) const;
+			inline size_t columns(void) const;
 
 			//{{{ Friends
 
@@ -175,6 +167,19 @@
 //}}}
 
 
+//{{{    Matrix::operator= (Matrix other)
+
+	    template < typename data_t >
+	    Matrix < data_t >& Matrix < data_t > ::operator=(Matrix other)
+		    {
+		    std::cout<<"invoking Matrix::operator=()"<<std::endl;
+			//std::swap(this->row_size, other.row_size);
+			//std::swap(this->column_size, other.column_size);
+			//std::swap(this->data, other.data);
+		    swap((*this), other);
+		    return *this;
+		}
+//}}}
 //{{{    Matrix::operator[](const unsigned int idx)
 
 	template < typename data_t >
@@ -226,7 +231,7 @@
 
 
 
-//{{{  operator<< (ostream lhs, Matrix rhs)
+//{{{operator<< (ostream lhs, Matrix rhs)
 
 	template < typename data_t >
 	std::ostream& operator<< (std::ostream& stream, Matrix < data_t > const& mat)
@@ -237,21 +242,8 @@
 				stream<<"["<<it<<"]"<<std::endl;
 				;
 			}
-		    if(!mat.row_size) stream<<"--empty-- "<<std::endl; ;
+		    if(!mat.rows()) stream<<"--empty-- "<<std::endl; ;
 		    return stream;
-		}
-//}}}
-//{{{    Matrix::operator=(Matrix other)
-
-	    template < typename data_t >
-	    Matrix < data_t >& Matrix < data_t > ::operator=(Matrix other)
-		    {
-		    std::cout<<"invoking Matrix::operator=()"<<std::endl;
-			//std::swap(this->row_size, other.row_size);
-			//std::swap(this->column_size, other.column_size);
-			//std::swap(this->data, other.data);
-		    swap((*this), other);
-		    return *this;
 		}
 //}}}
 
@@ -307,4 +299,4 @@
 	}
 //}}}
 
-//}	/* namespace vectmath */
+}	/* namespace vectmath */

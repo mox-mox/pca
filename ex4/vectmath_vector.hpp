@@ -7,8 +7,8 @@
 #include <algorithm>
 
 
-//namespace vectmath
-//{
+namespace vectmath
+{
 	template < typename data_t >
 	class Vector
 	{
@@ -38,19 +38,11 @@
 
 			//{{{ Operators
 
-			Vector& operator=(Vector other);
-			data_t& operator[] (const unsigned int idx);
-			const data_t& operator[] (const unsigned int idx) const;
-			Vector& operator+=(const Vector &other);
-			Vector& operator-=(const Vector &other);
-
-			//{{{ Friend operators
-
-			template < typename data_tt > friend std::ostream& operator<< (std::ostream& stream, Vector < data_tt > const& vec);
-			template < typename data_tt > friend data_tt operator*(const Vector<data_tt>& first, const Vector<data_tt>& second);
-			template < typename data_tt > friend Vector<data_tt> operator+(Vector<data_tt> first, const Vector<data_tt>& second);
-			template < typename data_tt > friend Vector<data_tt> operator-(Vector<data_tt> first, const Vector<data_tt>& second);
-			//}}}
+			Vector&       operator= (Vector other);
+			data_t&       operator[](const unsigned int idx);
+			const data_t& operator[](const unsigned int idx) const;
+			Vector&       operator+=(const Vector &other);
+			Vector&       operator-=(const Vector &other);
 			//}}}
 
 			size_t length(void) const;
@@ -160,7 +152,7 @@
 ////}}}
 
 
-//{{{    Vector::operator=(Vector other)
+//{{{    Vector::operator= (Vector other)
 
 	template < typename data_t >
 	Vector < data_t >& Vector < data_t > ::operator=(Vector other)
@@ -237,7 +229,7 @@
 		{
 			stream << std::setprecision(4) << std::setfill(' ') << std::setw(9) << it << " ";
 		}
-		if(!vec.size) stream<<"--empty-- ";
+		if(!vec.length()) stream<<"--empty-- ";
 		stream<<"]";
 		return stream;
 	}
@@ -266,10 +258,10 @@
 	data_t operator*(const Vector<data_t>& first, const Vector<data_t>& second)
 	{
 #ifdef DEBUG
-		if(first.size != second.size) throw std::logic_error("Trying to multiply vectors of different sizes.");
+		if(first.length() != second.length()) throw std::logic_error("Trying to multiply vectors of different sizes.");
 #endif
 		data_t retval=0;
-		for(unsigned int i=0; i<first.size;i++) retval+=first[i]*second[i];
+		for(unsigned int i=0; i<first.length();i++) retval+=first[i]*second[i];
 		return retval;
 	}
 //}}}
@@ -299,4 +291,4 @@
 	}
 //}}}
 
-//}	/* namespace vectmath */
+}	/* namespace vectmath */
