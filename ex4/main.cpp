@@ -5,6 +5,9 @@
 #include "vectmath_vector.hpp"
 #include "vectmath_matrix.hpp"
 #include "utils.h"
+#include <fstream>
+#include <sys/stat.h>
+#include <sys/time.h>
 
 #ifdef VECTORISE
 int num_threads;
@@ -63,16 +66,16 @@ int main(int argc, char** argv)
 		if(use_float)
 		{
 			std::cout<<"single precission floating point values."<<std::endl;
-			!vectmath::Vector<float>::test() && (retval=false);
-			!vectmath::Matrix<float>::test() && (retval=false);
+			!vectmath::Vector < float > ::test() && (retval=false);
+			!vectmath::Matrix < float > ::test() && (retval=false);
 		}
 		else
 		{
 			std::cout<<"double precission floating point values."<<std::endl;
-			!vectmath::Vector<double>::test() && (retval=false);
-			!vectmath::Matrix<double>::test() && (retval=false);
+			!vectmath::Vector < double > ::test() && (retval=false);
+			!vectmath::Matrix < double > ::test() && (retval=false);
 		}
-		std::cout<<"Unittests "<<(retval?"":"NOT")<<" passed."<<std::endl;
+		std::cout<<"Unittests "<<(retval ? "" : "NOT")<<" passed."<<std::endl;
 		exit(!retval);
 	}
 #endif
@@ -85,6 +88,8 @@ int main(int argc, char** argv)
 #endif
 	std::cout<<"	- Using "<<iterations<<" iterations."<<std::endl;
 
+	timeval start, end;
+	uint64_t microseconds=0;
 	uint64_t t0, t1, t_ges=0;
 	if(use_float)
 	{
@@ -93,9 +98,12 @@ int main(int argc, char** argv)
 		vectmath::Vector < float > y;
 		for(int i=0; i < iterations; i++)
 		{
+			gettimeofday(&start, 0);
 			rdtsc(t0);
 			y = A*x;
 			rdtsc(t1);
+			gettimeofday(&end, 0);
+			microseconds += ((end.tv_sec-start.tv_sec)*1000000+(end.tv_usec-start.tv_usec));
 			t_ges += t1-t0;
 		}
 	}
@@ -106,13 +114,41 @@ int main(int argc, char** argv)
 		vectmath::Vector < double > y;
 		for(int i=0; i < iterations; i++)
 		{
+			gettimeofday(&start, 0);
 			rdtsc(t0);
 			y = A*x;
 			rdtsc(t1);
+			gettimeofday(&end, 0);
+			microseconds += ((end.tv_sec-start.tv_sec)*1000000+(end.tv_usec-start.tv_usec));
 			t_ges += t1-t0;
 		}
 	}
 
+	// Write the results to a file
+	std::string path="benchmark_data/";
+	{
+		struct stat info;
+		if(stat(path.c_str(), &info))
+		{
+			int temp = system(("mkdir "+path).c_str());
+			temp=temp;
+		}
+	}
+	std::ofstream data_output;
+	std::ostringstream out;
+	out << std::setfill('0') << std::setw(5) << dimensions;
+	std::string filename = path+"dimension_" + out.str() + (use_float?"_float":"_double") + ".dat";
+	bool file_new=false;
+
+	{
+		struct stat info;
+		if(stat(filename.c_str(), &info)) file_new=true;
+	}
+
+	data_output.open(filename, std::ios_base::app);
+	if(file_new) data_output<<"# Threads Processor_ticks Runtime"<<std::endl;
+	data_output<< std::setfill(' ') << std::setw(2) <<std::to_string(num_threads)<<" "<< std::setfill(' ') << std::setw(20) <<std::to_string(t_ges/iterations)<<" "<<std::to_string(microseconds/iterations)<<std::endl;
+	data_output.close();
 
 
 	std::cout<<"Average execution time was "<<(t_ges/iterations)<<"."<<std::endl;
