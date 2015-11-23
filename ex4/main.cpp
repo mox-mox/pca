@@ -6,13 +6,13 @@
 #include "vectmath_matrix.hpp"
 #include "utils.h"
 
+int num_threads;
 
 int main(int argc, char** argv)
 {
 	//{{{ Argument handling:
 
 	int dimensions;
-	int threads;
 	int seed;
 	int iterations;
 	bool use_float;
@@ -25,7 +25,7 @@ int main(int argc, char** argv)
 	try
 	{
 		ops >> GetOpt::Option('d', "dimensions", dimensions, 4);
-		ops >> GetOpt::Option('t', "threads", threads, 1);
+		ops >> GetOpt::Option('t', "threads", num_threads, 1);
 		ops >> GetOpt::Option('s', "seed", seed, 0);
 		ops >> GetOpt::Option('i', "iterations", iterations, 1);
 		ops >> GetOpt::OptionPresent('f', "float", use_float);
@@ -74,7 +74,7 @@ int main(int argc, char** argv)
 
 	std::cout<<"Measuring execution time for calculation of y = A*x with A ∈ Mat("<<dimensions<<"x"<<dimensions<<") and x,y ∈ |R^"<<dimensions<<"."<<std::endl;
 	std::cout<<"	- Data type is "<<(use_float ? "float" : "double")<<"."<<std::endl;
-	std::cout<<"	- Using up to "<<threads<<" threads."<<std::endl;
+	std::cout<<"	- Using up to "<<num_threads<<" threads."<<std::endl;
 	std::cout<<"	- Using "<<iterations<<" iterations."<<std::endl;
 
 	uint64_t t0, t1, t_ges=0;

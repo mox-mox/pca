@@ -1,15 +1,13 @@
 
 BINARY = ueberproject
 DEBUG_BUILD=1
-
-OPTIMISE_TRANSPOSE=1
-
+VECTORISE=1
 
 
-#
-ifeq ($(OPTIMISE_TRANSPOSE),1)
-	DEFS		+= -DOPTIMISE_TRANSPOSE
-endif
+#OPTIMISE_TRANSPOSE=1
+#ifeq ($(OPTIMISE_TRANSPOSE),1)
+#	DEFS		+= -DOPTIMISE_TRANSPOSE
+#endif
 
 
 # MOX: Set default to verbose, except when explicitly set to 0
@@ -80,6 +78,9 @@ COMMONFLAGS	+= -Iextern
 COMMONFLAGS +=
 ifneq ($(DEBUG_BUILD), 0)
 	COMMONFLAGS += -DDEBUG
+endif
+ifneq ($(VECTORISE), 0)
+	COMMONFLAGS += -DVECTORISE
 endif
 
 ###############################################################################

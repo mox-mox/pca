@@ -8,6 +8,10 @@
 #include <algorithm>
 #include <memory>
 
+#ifdef VECTORISE
+extern int num_threads;	// When using the vectorised version, the number of threads to use has to be a global variable.
+#include <pthread.h>
+#endif
 
 namespace vectmath
 {
@@ -46,9 +50,23 @@ namespace vectmath
 			Matrix&               operator-=(const Matrix &other);
 			//}}}
 
+			//{{{ Thread workers
+
+			template <typename Arg1, typename Arg2>
+			struct Thread_args { Arg1& arg1; Arg2& arg2; unsigned int thread_number; };
+
+			//static void* matrix_by_vector_thread(Thread_args<Matrix<data_t>,Vector<data_t>>* args);
+			static void* matrix_by_vector_thread(void* args);
+
+			//}}}
+
+			//{{{ Helper functions
+
 			inline size_t rows(void) const;
 			inline size_t columns(void) const;
 			template < typename data_tt > friend void swap(Matrix < data_tt >& first, Matrix < data_tt >& second);
+			//}}}
+
 
 			//{{{ Static unittests
 
@@ -229,7 +247,21 @@ namespace vectmath
 		if(first.columns() != second.length()) throw std::logic_error("Trying to multiply vectors of different sizes.");
 #endif
 		Vector < data_t > retval(first.rows());
+#ifdef VECTORISE
+		pthread_t* threads= new pthread_t[num_threads];
+
+		//Matrix<data_t>::Thread_args < Matrix < data_t >, Vector < data_t > > thread_args[num_threads];
+		for(int i=0; i<num_threads; i++)
+		{
+			///////////int pthread_create(thread[i], const pthread_attr_t *attr, void *(*start_routine) (void *), void *arg);
+			//thread_args[i]={first, second, static_cast<unsigned int>(i)};
+			//pthread_create(thread[i], nullptr, &Matrix<data_t>::matrix_by_vector, reinterpret_cast<void*>(&thread_args[i]));
+			pthread_create(&threads[i], nullptr, &Matrix<data_t>::matrix_by_vector_thread, nullptr);
+		}
+		delete[] threads;
+#else
 		for(unsigned int i=0; i < first.rows(); i++) retval[i]=first[i]*second;
+#endif
 		return retval;
 	}
 //}}}
@@ -245,6 +277,22 @@ namespace vectmath
 	}
 //}}}
 	//}}}
+
+//{{{     Thread workers
+
+
+//{{{    void* Matrix::matrix_by_vector_thread(void* args)
+
+			void* matrix_by_vector_thread(void* args)
+			{
+				args=args;
+				return nullptr;
+			}
+//}}}
+
+//}}}
+
+//{{{     Helper functions
 
 //{{{    size_t Matrix::rows()
 
@@ -271,6 +319,7 @@ namespace vectmath
 		    std::swap(first.column_size, second.column_size);
 		    std::swap(first.data, second.data);
 		}
+//}}}
 //}}}
 
 //{{{     Static unittests
