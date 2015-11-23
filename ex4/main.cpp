@@ -4,17 +4,9 @@
 #include <ctime>
 #include "vectmath_vector.hpp"
 #include "vectmath_matrix.hpp"
+#include "utils.h"
 
 
-
-
-
-
-
-//#define size 2048
-//#define size 5
-//using namespace GetOpt;
-//using namespace vectmath;
 int main(int argc, char** argv)
 {
 	int dimensions;
@@ -45,6 +37,22 @@ int main(int argc, char** argv)
 
 
 	std::srand(ops >> GetOpt::OptionPresent('s', "seed") ? seed : std::time(0));
+
+
+	uint64_t t0;
+	uint64_t t1;
+	uint64_t t_ges=0;
+
+
+		rdtsc(t0);
+		rdtsc(t1);
+		t_ges += t1-t0;
+
+
+
+
+
+
 
 
 

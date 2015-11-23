@@ -61,7 +61,6 @@ SIZE			:= size
 ################################################################################
 # Used libraries
 
-#LDLIBS		+= -Wl,--start-group -lc -lgcc -lnosys -Wl,--end-group
 LDLIBS		+= -pthread
 
 ################################################################################
@@ -76,7 +75,9 @@ COMMONFLAGS	+= -fno-common -ffunction-sections -fdata-sections
 COMMONFLAGS	+= -MD -Wundef
 COMMONFLAGS	+= -Wno-packed-bitfield-compat # TODO: Remove this
 COMMONFLAGS += -Wno-unused-function
+COMMONFLAGS	+= -Iextern
 #COMMONFLAGS	+= -Wpadded -Winline
+COMMONFLAGS +=
 ifneq ($(DEBUG_BUILD), 0)
 	COMMONFLAGS += -DDEBUG
 endif
@@ -90,10 +91,10 @@ CXXFLAGS	+= $(COMMONFLAGS)  -std=gnu++14# -Weffc++
 ###############################################################################
 # Linker flags
 
-LDFLAGS		+= $(addprefix -L, $(dir $(LIBS)))
-LDFLAGS		+= -L..
+##LDFLAGS		+= $(addprefix -L, $(dir $(LIBS)))
+##LDFLAGS		+= -L..
 LDFLAGS		+= -Wl,-Map=$(@).map
-DFLAGS		+= -Wl,--gc-sections
+LDFLAGS		+= -Wl,--gc-sections
 
 ###############################################################################
 # Calculate the percentage for progress indication
@@ -162,6 +163,11 @@ clean:
 .PHONY: tags
 tags:
 	ctags -R --c++-kinds=+p --fields=+iaS --extra=+q --excmd=p .
+
+.PHONY: valgrind
+valgrind: all
+	valgrind --leak-check=full --show-leak-kinds=all $(BUILDDIR)/$(BINARY).elf
+
 
 
 
