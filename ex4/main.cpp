@@ -54,9 +54,9 @@ int main(int argc, char** argv)
 	//vectmath::Vector<double> v1(dimensions);
 	//std::cout<<"v1: "<<v1<<std::endl;
 
-	vectmath::Vector<double> v2 { 10, 9, 8, 7, 5, 4, 3, 2, 1, 0 };
+	Vector<double> v2 { 10, 9, 8, 7, 5, 4, 3, 2, 1, 0 };
 	std::cout<<"v2: "<<v2<<std::endl;
-	vectmath::Vector<double> v3(v2);
+	Vector<double> v3(v2);
 	std::cout<<"v3: "<<v2<<std::endl;
 	//v2+=v3;
 	//std::cout<<"v2: "<<v2<<std::endl;
@@ -80,18 +80,47 @@ int main(int argc, char** argv)
 	//	std::cout<<"fooooooooooooooooooooooooooo"<<std::endl;
 	//}
 
-	{
-		vectmath::Matrix<double> m1{ {1,2,3}, {4,5,6}, {7,8,9}};
-		std::cout<<"m1: "<<m1<<std::endl;
-	}
+	//{
+	//	Matrix<double> m1{ {1,2,3}, {4,5,6}, {7,8,9}};
+	//	std::cout<<"m1: "<<m1<<std::endl;
+	//}
+
+	//{
+	//	Matrix < double > m2(20, 15);
+	//	Matrix < double > m3(m2);
+
+	//	std::cout<<"m2: "<<m2<<std::endl;
+	//	std::cout<<"m3: "<<m3<<std::endl;
+
+	//	Matrix < double > m4;
+	//	std::cout<<"m4: "<<m4<<std::endl;
+	//	m4=m2;
+	//	//swap(m4,m2);
+	//	std::cout<<"m4: "<<m4<<std::endl;
+
+	//	std::cout<<"m4[3]: "<<m4[3]<<std::endl;
+	//	std::cout<<"m4[3][4]: "<<m4[3][4]<<std::endl;
+
+	//	m4+=m2;
+	//	std::cout<<"m4+m2: "<<m4<<std::endl;
+	//	m4-=m2;
+	//	std::cout<<"m4: "<<m4<<std::endl;
+	//}
 
 	{
-		vectmath::Matrix < double > m2(20, 15);
-		vectmath::Matrix < double > m3(m2);
-		std::cout<<"m2: "<<m2<<std::endl;
-		std::cout<<"m3: "<<m3<<std::endl;
-	}
+		Matrix<double> A{ {1,2,3}, {4,5,6}, {7,8,9}, {10,11,12}};
+		Vector<double> x{ 1, 2, 3};
+		std::cout<<"A = "<<A<<", x = "<<x<<", Ax = "<<A*x<<"."<<std::endl;
+		if(A*x != Vector<double>{14,32,50,68})
+			std::cout<<"Mist"<<std::endl;
+		else
+			std::cout<<"Passed"<<std::endl;
 
+
+
+
+
+	}
 
 
 

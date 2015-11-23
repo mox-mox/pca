@@ -7,8 +7,8 @@
 #include <algorithm>
 
 
-namespace vectmath
-{
+//namespace vectmath
+//{
 	template < typename data_t >
 	class Vector
 	{
@@ -48,14 +48,21 @@ namespace vectmath
 
 			template < typename data_tt > friend std::ostream& operator<< (std::ostream& stream, Vector < data_tt > const& vec);
 			template < typename data_tt > friend data_tt operator*(const Vector<data_tt>& first, const Vector<data_tt>& second);
-			template < typename data_tt > friend data_tt operator+(const Vector<data_tt> first, const Vector<data_tt>& second);
-			template < typename data_tt > friend data_tt operator-(const Vector<data_tt> first, const Vector<data_tt>& second);
+			template < typename data_tt > friend Vector<data_tt> operator+(Vector<data_tt> first, const Vector<data_tt>& second);
+			template < typename data_tt > friend Vector<data_tt> operator-(Vector<data_tt> first, const Vector<data_tt>& second);
 			//}}}
 			//}}}
+
+			size_t length(void) const;
 
 			//{{{ Friends
 
-			template < typename data_tt > friend void swap(Vector < data_tt >& first, Vector < data_tt >& second);
+			template < typename data_tt > friend void swap(Vector < data_tt >& first, Vector < data_tt >& second)
+	{
+		//using std::swap;
+		std::swap(first.size, second.size);
+		std::swap(first.data, second.data);
+	}
 			//}}}
 	};
 
@@ -210,16 +217,16 @@ namespace vectmath
 //}}}
 
 
-//{{{  void swap(Vector& first, Vector& second)
-
-	template < typename data_t >
-	void swap(Vector < data_t >& first, Vector < data_t > second)
-	{
-		//using std::swap;
-		std::swap(first.size, second.size);
-		std::swap(first.data, second.data);
-	}
-//}}}
+////{{{  void swap(Vector& first, Vector& second)
+//
+//	template < typename data_t >
+//	void swap(Vector < data_t >& first, Vector < data_t > second)
+//	{
+//		//using std::swap;
+//		std::swap(first.size, second.size);
+//		std::swap(first.data, second.data);
+//	}
+////}}}
 //{{{  operator<< (ostream lhs, Vector rhs)
 
 	template < typename data_t >
@@ -233,6 +240,24 @@ namespace vectmath
 		if(!vec.size) stream<<"--empty-- ";
 		stream<<"]";
 		return stream;
+	}
+//}}}
+//{{{  bool operator==(Vector& first, Vector& second)
+
+	template < typename data_t >
+	bool operator==(const Vector<data_t>& first, const Vector<data_t>& second)
+	{
+		if(first.length() != second.length()) return false;
+		for(unsigned int i=0; i<first.length();i++) if(first[i] != second[i]) return false;
+		return true;
+	}
+//}}}
+//{{{  bool operator!=(Vector& first, Vector& second)
+
+	template < typename data_t >
+	bool operator!=(const Vector<data_t>& first, const Vector<data_t>& second)
+	{
+		return !(first==second);
 	}
 //}}}
 //{{{  data_t operator*(Vector& first, Vector& second)
@@ -251,7 +276,7 @@ namespace vectmath
 //{{{  data_t operator+(Vector first, Vector& second)
 
 	template < typename data_t >
-	data_t operator+(const Vector<data_t> first, const Vector<data_t>& second) // First is not a reference because we need a temporary object anyways.
+	Vector<data_t> operator+(Vector<data_t> first, const Vector<data_t>& second) // First is not a reference because we need a temporary object anyways.
 	{
 		return first+=second;
 	}
@@ -264,4 +289,14 @@ namespace vectmath
 		return first-=second;
 	}
 //}}}
-}	/* namespace vectmath */
+
+//{{{  size_t Vector::length()
+
+	template < typename data_t >
+	size_t Vector<data_t>::length(void) const
+	{
+		return size;
+	}
+//}}}
+
+//}	/* namespace vectmath */

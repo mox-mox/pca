@@ -70,7 +70,8 @@ LDLIBS		+= -pthread
 #Note: -isystem cannot be used with C++ files, because it implicitly adds extern "C" to each file :(
 #COMMONFLAGS	+= -Os -ggdb -Wshadow $(DEFS)
 COMMONFLAGS	+= -Os -ggdb $(DEFS)
-COMMONFLAGS	+= -Wall -Wextra -Wpedantic -Werror -Wfatal-errors -Wredundant-decls
+#COMMONFLAGS	+= -Wall -Wextra -Wpedantic -Werror -Wfatal-errors -Wredundant-decls
+COMMONFLAGS	+= -Wall -Wextra -Wpedantic -Werror  -Wredundant-decls
 COMMONFLAGS	+= -fno-common -ffunction-sections -fdata-sections
 COMMONFLAGS	+= -MD -Wundef
 COMMONFLAGS	+= -Wno-packed-bitfield-compat # TODO: Remove this
