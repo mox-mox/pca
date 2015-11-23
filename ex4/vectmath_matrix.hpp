@@ -52,11 +52,13 @@ namespace vectmath
 
 			//{{{ Thread workers
 
-			template <typename Arg1, typename Arg2>
-			struct Thread_args { Arg1& arg1; Arg2& arg2; unsigned int thread_number; };
+#ifdef VECTORISE
+			//template <typename Arg1, typename Arg2> struct Thread_args { Arg1& arg1; Arg2& arg2; unsigned int thread_number; };
+			struct Thread_args {const Matrix<data_t>* arg1=nullptr; const Vector<data_t>* arg2=nullptr; unsigned int thread_number=0; };
 
 			//static void* matrix_by_vector_thread(Thread_args<Matrix<data_t>,Vector<data_t>>* args);
 			static void* matrix_by_vector_thread(void* args);
+#endif
 
 			//}}}
 
@@ -249,14 +251,17 @@ namespace vectmath
 		Vector < data_t > retval(first.rows());
 #ifdef VECTORISE
 		pthread_t* threads= new pthread_t[num_threads];
-
-		//Matrix<data_t>::Thread_args < Matrix < data_t >, Vector < data_t > > thread_args[num_threads];
+		typename Matrix<data_t>::Thread_args* thread_args = new typename Matrix<data_t>::Thread_args[num_threads];
 		for(int i=0; i<num_threads; i++)
 		{
-			///////////int pthread_create(thread[i], const pthread_attr_t *attr, void *(*start_routine) (void *), void *arg);
-			//thread_args[i]={first, second, static_cast<unsigned int>(i)};
-			//pthread_create(thread[i], nullptr, &Matrix<data_t>::matrix_by_vector, reinterpret_cast<void*>(&thread_args[i]));
-			pthread_create(&threads[i], nullptr, &Matrix<data_t>::matrix_by_vector_thread, nullptr);
+			thread_args[i].arg1=&first;
+			thread_args[i].arg2=&second;
+			thread_args[i].thread_number=static_cast<unsigned int>(i);
+			pthread_create(threads+i, nullptr, &Matrix<data_t>::matrix_by_vector_thread, reinterpret_cast<void*>(&thread_args[i]));
+		}
+		for(int i=0; i<num_threads; i++)
+		{
+			 pthread_join(*(threads+i), nullptr);
 		}
 		delete[] threads;
 #else
@@ -281,14 +286,19 @@ namespace vectmath
 //{{{     Thread workers
 
 
+#ifdef VECTORISE
 //{{{    void* Matrix::matrix_by_vector_thread(void* args)
 
-			void* matrix_by_vector_thread(void* args)
-			{
-				args=args;
-				return nullptr;
-			}
+	    template < typename data_t >
+		void* Matrix<data_t>::matrix_by_vector_thread(void* arguments)
+		{
+			typename Matrix<data_t>::Thread_args* args = reinterpret_cast<typename Matrix<data_t>::Thread_args*>(arguments);
+			std::cout<<"foooooooo"<<args->thread_number<<std::endl;
+			args=args;
+			return nullptr;
+		}
 //}}}
+#endif
 
 //}}}
 
