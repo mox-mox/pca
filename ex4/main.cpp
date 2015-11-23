@@ -6,7 +6,9 @@
 #include "vectmath_matrix.hpp"
 #include "utils.h"
 
+#ifdef VECTORISE
 int num_threads;
+#endif
 
 int main(int argc, char** argv)
 {
@@ -25,7 +27,9 @@ int main(int argc, char** argv)
 	try
 	{
 		ops >> GetOpt::Option('d', "dimensions", dimensions, 4);
+#ifdef VECTORISE
 		ops >> GetOpt::Option('t', "threads", num_threads, 1);
+#endif
 		ops >> GetOpt::Option('s', "seed", seed, 0);
 		ops >> GetOpt::Option('i', "iterations", iterations, 1);
 		ops >> GetOpt::OptionPresent('f', "float", use_float);
@@ -39,7 +43,9 @@ int main(int argc, char** argv)
 		std::cerr << "Usage: "<<argv[0]<<" [options]"<<std::endl;
 		std::cerr << "Options:"<<std::endl;
 		std::cerr << "-d|--dimensions <NUM>: Set the matrix to be a NUMxNUM matrix."<<std::endl;
+#ifdef VECTORISE
 		std::cerr << "-t|--threads <NUM>:    Set the number of threads that are started for the computation of the multiplication."<<std::endl;
+#endif
 		std::cerr << "-s|--seed <NUM>:       Set the seed for the random number generator. This is usefull for testing purposes."<<std::endl;
 		std::cerr << "-i|--iterations <NUM>: Set the number of iterations. Longer will probably yield more stable results but take longer."<<std::endl;
 		std::cerr << "-f|--float:            Use single precission floats instead of the default double precission floating point values."<<std::endl;
@@ -74,7 +80,9 @@ int main(int argc, char** argv)
 
 	std::cout<<"Measuring execution time for calculation of y = A*x with A ∈ Mat("<<dimensions<<"x"<<dimensions<<") and x,y ∈ |R^"<<dimensions<<"."<<std::endl;
 	std::cout<<"	- Data type is "<<(use_float ? "float" : "double")<<"."<<std::endl;
+#ifdef VECTORISE
 	std::cout<<"	- Using up to "<<num_threads<<" threads."<<std::endl;
+#endif
 	std::cout<<"	- Using "<<iterations<<" iterations."<<std::endl;
 
 	uint64_t t0, t1, t_ges=0;

@@ -53,10 +53,7 @@ namespace vectmath
 			//{{{ Thread workers
 
 #ifdef VECTORISE
-			//template <typename Arg1, typename Arg2> struct Thread_args { Arg1& arg1; Arg2& arg2; unsigned int thread_number; };
-			struct Thread_args {const Matrix<data_t>* arg1=nullptr; const Vector<data_t>* arg2=nullptr; unsigned int thread_number=0; };
-
-			//static void* matrix_by_vector_thread(Thread_args<Matrix<data_t>,Vector<data_t>>* args);
+			struct Thread_args {const Matrix<data_t>* arg1=nullptr; const Vector<data_t>* arg2=nullptr; Vector<data_t>* retval=nullptr; unsigned int thread_number=0; };
 			static void* matrix_by_vector_thread(void* args);
 #endif
 
@@ -248,22 +245,21 @@ namespace vectmath
 #ifdef DEBUG
 		if(first.columns() != second.length()) throw std::logic_error("Trying to multiply vectors of different sizes.");
 #endif
-		Vector < data_t > retval(first.rows());
+		Vector < data_t > retval(first.rows()); // Where to store the result
 #ifdef VECTORISE
 		pthread_t* threads= new pthread_t[num_threads];
-		typename Matrix<data_t>::Thread_args* thread_args = new typename Matrix<data_t>::Thread_args[num_threads];
+		typename Matrix<data_t>::Thread_args* thread_args = new typename Matrix<data_t>::Thread_args[num_threads];						// Having no VLA in C++ sucks
 		for(int i=0; i<num_threads; i++)
 		{
-			thread_args[i].arg1=&first;
-			thread_args[i].arg2=&second;
-			thread_args[i].thread_number=static_cast<unsigned int>(i);
-			pthread_create(threads+i, nullptr, &Matrix<data_t>::matrix_by_vector_thread, reinterpret_cast<void*>(&thread_args[i]));
+			new(&thread_args[i]) typename Matrix<data_t>::Thread_args {&first, &second, &retval, static_cast<unsigned int>(i) };		// Initialise each thread data structure
+			pthread_create(&threads[i], nullptr, &Matrix<data_t>::matrix_by_vector_thread, reinterpret_cast<void*>(&thread_args[i]));	// And having to cast everything to void* is a disappointment, too.
 		}
 		for(int i=0; i<num_threads; i++)
 		{
-			 pthread_join(*(threads+i), nullptr);
+			 pthread_join(threads[i], nullptr);
 		}
 		delete[] threads;
+		delete[] thread_args;
 #else
 		for(unsigned int i=0; i < first.rows(); i++) retval[i]=first[i]*second;
 #endif
@@ -293,8 +289,11 @@ namespace vectmath
 		void* Matrix<data_t>::matrix_by_vector_thread(void* arguments)
 		{
 			typename Matrix<data_t>::Thread_args* args = reinterpret_cast<typename Matrix<data_t>::Thread_args*>(arguments);
-			std::cout<<"foooooooo"<<args->thread_number<<std::endl;
-			args=args;
+			for(unsigned int i=args->thread_number; i < args->arg1->rows(); i+=num_threads)
+			{
+				//std::cout<<"Thread_worker["<<args->thread_number<<"], slice("<<i<<")"<<std::endl;
+				(*(args->retval))[i]=(*(args->arg1))[i]*(*(args->arg2));
+			}
 			return nullptr;
 		}
 //}}}

@@ -167,7 +167,12 @@ tags:
 
 .PHONY: valgrind
 valgrind: all
-	valgrind --leak-check=full --show-leak-kinds=all $(BUILDDIR)/$(BINARY).elf
+	valgrind --leak-check=full --show-leak-kinds=all $(BUILDDIR)/$(BINARY).elf -d 1000 -t 6 -i 10
+
+.PHONY: selftest
+selftest: all
+	$(BUILDDIR)/$(BINARY).elf -v
+
 
 
 
