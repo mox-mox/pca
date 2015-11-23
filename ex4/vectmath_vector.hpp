@@ -44,6 +44,14 @@ namespace vectmath
 
 			size_t length(void) const;
 			template < typename data_tt > friend void swap(Vector < data_tt >& first, Vector < data_tt >& second);
+
+			//{{{ Static unittests
+
+#ifdef DEBUG
+			static bool test(void);
+			static bool test_scalar_product(void);
+#endif
+			//}}}
 	};
 
 
@@ -197,7 +205,7 @@ namespace vectmath
 		return !(first == second);
 	}
 //}}}
-//{{{    data_t              operator* (Vector& first, Vector& second)
+//{{{    data_t              operator* (Vector& first, Vector& second) [[ Scalar product ]]
 
 	template < typename data_t >
 	data_t operator*(const Vector < data_t > &first, const Vector < data_t > &second)
@@ -259,6 +267,39 @@ namespace vectmath
 		    std::swap(first.size, second.size);
 		    std::swap(first.data, second.data);
 		}
+//}}}
+
+//{{{     Static unittests
+
+#ifdef DEBUG
+//{{{    bool Vector::test()
+
+	    template < typename data_t >
+	    bool Vector<data_t>::test(void)
+	    {
+			bool retval = true;
+			std::cout<<"	Testing Vector class:"<<std::endl;
+			!test_scalar_product() && (retval=false);
+
+			std::cout<<(retval?"	-> Success!":"-> Failure!")<<std::endl;
+			return retval;
+		}
+//}}}
+//{{{    bool Vector::test_scalar_product()
+
+	    template < typename data_t >
+	    bool Vector<data_t>::test_scalar_product(void)
+	    {
+			bool retval=true;
+			std::cout<<"		- Scalar product: ";
+			Vector<data_t>v1={0,1,2,3,4};
+			Vector<data_t>v2={5,6,7,8,9};
+			!(v1*v2 == 80) && (retval=false);
+			std::cout<<(retval?"...passed":"...failed")<<std::endl;
+			return retval;
+		}
+//}}}
+#endif
 //}}}
 
 }	/* namespace vectmath */

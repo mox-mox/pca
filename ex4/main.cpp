@@ -9,154 +9,105 @@
 
 int main(int argc, char** argv)
 {
+	//{{{ Argument handling:
+
 	int dimensions;
 	int threads;
 	int seed;
+	int iterations;
+	bool use_float;
+#ifdef DEBUG
+	bool verify;
+#endif
+
 	GetOpt::GetOpt_pp ops(argc, argv);
-
 	ops.exceptions(std::ios::failbit | std::ios::eofbit);
-
 	try
 	{
 		ops >> GetOpt::Option('d', "dimensions", dimensions, 4);
-		ops >> GetOpt::Option('t', "threads", threads, 2);
+		ops >> GetOpt::Option('t', "threads", threads, 1);
 		ops >> GetOpt::Option('s', "seed", seed, 0);
+		ops >> GetOpt::Option('i', "iterations", iterations, 1);
+		ops >> GetOpt::OptionPresent('f', "float", use_float);
+#ifdef DEBUG
+		ops >> GetOpt::OptionPresent('v', "verify", verify);
+#endif
 	}
 	catch(GetOpt::GetOptEx ex)
 	{
 		std::cerr << "Error in arguments" << std::endl;
 		std::cerr << "Usage: "<<argv[0]<<" [options]"<<std::endl;
 		std::cerr << "Options:"<<std::endl;
-		std::cerr << "-s|--size <NUM>: Set the matrix to be a NUMxNUM matrix."<<std::endl;
-		std::cerr << "-t|--threads <NUM>: Set the number of threads that are started for the computation of the multiplication."<<std::endl;
+		std::cerr << "-d|--dimensions <NUM>: Set the matrix to be a NUMxNUM matrix."<<std::endl;
+		std::cerr << "-t|--threads <NUM>:    Set the number of threads that are started for the computation of the multiplication."<<std::endl;
+		std::cerr << "-s|--seed <NUM>:       Set the seed for the random number generator. This is usefull for testing purposes."<<std::endl;
+		std::cerr << "-i|--iterations <NUM>: Set the number of iterations. Longer will probably yield more stable results but take longer."<<std::endl;
+		std::cerr << "-f|--float:            Use single precission floats instead of the default double precission floating point values."<<std::endl;
+#ifdef DEBUG
+		std::cerr << "-v|--verify:           Call the unittest verification routines for the vectmath classes. CAUTION: These tests are quite thin."<<std::endl;
+#endif
+		exit(-1);
 	}
-
-	std::cout<<"d was set to "<<dimensions<<std::endl;
-	std::cout<<"t was set to "<<threads<<std::endl;
-	std::cout<<"s was set to "<<seed<<std::endl;
-
-
 	std::srand(ops >> GetOpt::OptionPresent('s', "seed") ? seed : std::time(0));
-
-
-	uint64_t t0;
-	uint64_t t1;
-	uint64_t t_ges=0;
-
-
-		rdtsc(t0);
-		rdtsc(t1);
-		t_ges += t1-t0;
-
-
-
-
-
-
-
-
-
+#ifdef DEBUG
+	if(verify)
 	{
-		vectmath::Vector < double > v0;
-		std::cout<<"v0: "<<v0<<"asfdadsf"<<std::endl;
-	}
-	vectmath::Vector<double> v1(dimensions);
-	std::cout<<"v1: "<<v1<<std::endl;
-
-	vectmath::Vector<double> v2 { 10, 9, 8, 7, 5, 4, 3, 2, 1, 0 };
-	std::cout<<"v2: "<<v2<<std::endl;
-	vectmath::Vector<double> v3(v2);
-	std::cout<<"v3: "<<v2<<std::endl;
-	v2+=v3;
-	std::cout<<"v2: "<<v2<<std::endl;
-
-	vectmath::Vector<double> v4 { 2, 1, 0 };
-	std::cout<<"v4: "<<v4<<std::endl;
-	vectmath::Vector<double> v5 { 4, 2, 5 };
-	std::cout<<"v5: "<<v5<<std::endl;
-
-	std::cout<<"v4*v5 = "<<v4*v5<<std::endl;
-
-
-	{
-		std::cout<<"fooooooooooooooooooooooooooo"<<std::endl;
-		std::cout<<"fooooooooooooooooooooooooooo"<<std::endl;
-		vectmath::Matrix < double > m0(20, 15);
-		std::cout<<"fooooooooooooooooooooooooooo"<<std::endl;
-		std::cout<<"fooooooooooooooooooooooooooo"<<std::endl;
-		std::cout<<"m0: "<<m0<<std::endl;
-		std::cout<<"fooooooooooooooooooooooooooo"<<std::endl;
-		std::cout<<"fooooooooooooooooooooooooooo"<<std::endl;
-	}
-
-	{
-		vectmath::Matrix<double> m1{ {1,2,3}, {4,5,6}, {7,8,9}};
-		std::cout<<"m1: "<<m1<<std::endl;
-	}
-
-	{
-		vectmath::Matrix < double > m2(20, 15);
-		vectmath::Matrix < double > m3(m2);
-
-		std::cout<<"m2: "<<m2<<std::endl;
-		std::cout<<"m3: "<<m3<<std::endl;
-
-		vectmath::Matrix < double > m4;
-		std::cout<<"m4: "<<m4<<std::endl;
-		m4=m2;
-		//swap(m4,m2);
-		std::cout<<"m4: "<<m4<<std::endl;
-
-		std::cout<<"m4[3]: "<<m4[3]<<std::endl;
-		std::cout<<"m4[3][4]: "<<m4[3][4]<<std::endl;
-
-		m4+=m2;
-		std::cout<<"m4+m2: "<<m4<<std::endl;
-		m4-=m2;
-		std::cout<<"m4: "<<m4<<std::endl;
-	}
-
-	{
-		vectmath::Matrix<double> A{ {1,2,3}, {4,5,6}, {7,8,9}, {10,11,12}};
-		vectmath::Vector<double> x{ 1, 2, 3};
-		std::cout<<"A = "<<A<<", x = "<<x<<", Ax = "<<A*x<<"."<<std::endl;
-		if(A*x != vectmath::Vector<double>{14,32,50,68})
-			std::cout<<"Mist"<<std::endl;
+		std::cout<<"Running unittests for";
+		bool retval=true;
+		if(use_float)
+		{
+			std::cout<<"single precission floating point values."<<std::endl;
+			!vectmath::Vector<float>::test() && (retval=false);
+			!vectmath::Matrix<float>::test() && (retval=false);
+		}
 		else
-			std::cout<<"Passed"<<std::endl;
+		{
+			std::cout<<"double precission floating point values."<<std::endl;
+			!vectmath::Vector<double>::test() && (retval=false);
+			!vectmath::Matrix<double>::test() && (retval=false);
+		}
+		std::cout<<"Unittests "<<(retval?"":"NOT")<<" passed."<<std::endl;
+		exit(!retval);
+	}
+#endif
+	//}}}
 
+	std::cout<<"Measuring execution time for calculation of y = A*x with A ∈ Mat("<<dimensions<<"x"<<dimensions<<") and x,y ∈ |R^"<<dimensions<<"."<<std::endl;
+	std::cout<<"	- Data type is "<<(use_float ? "float" : "double")<<"."<<std::endl;
+	std::cout<<"	- Using up to "<<threads<<" threads."<<std::endl;
+	std::cout<<"	- Using "<<iterations<<" iterations."<<std::endl;
 
-
-
-
+	uint64_t t0, t1, t_ges=0;
+	if(use_float)
+	{
+		vectmath::Matrix < float > A(dimensions, dimensions);
+		vectmath::Vector < float > x(dimensions);
+		vectmath::Vector < float > y;
+		for(int i=0; i < iterations; i++)
+		{
+			rdtsc(t0);
+			y = A*x;
+			rdtsc(t1);
+			t_ges += t1-t0;
+		}
+	}
+	else
+	{
+		vectmath::Matrix < double > A(dimensions, dimensions);
+		vectmath::Vector < double > x(dimensions);
+		vectmath::Vector < double > y;
+		for(int i=0; i < iterations; i++)
+		{
+			rdtsc(t0);
+			y = A*x;
+			rdtsc(t1);
+			t_ges += t1-t0;
+		}
 	}
 
 
 
+	std::cout<<"Average execution time was "<<(t_ges/iterations)<<"."<<std::endl;
 
-
-
-
-
-
-//
-//	Matrix<double> m1(size, true);
-//	Matrix<double> m2(size, true);
-//
-//#ifdef OPTIMISE_TRANSPOSE
-////#pragma message"Using transposed optimisation."
-//	m2.transpose();
-//#else
-//#pragma message"NOT using transposed optimisation."
-//#endif
-//
-//	clock_t t = clock();
-//	Matrix<double> m3(m1*m2);
-//	t = clock() - t;
-//
-//	//std::cout<<"Calculated "<<m1<<"*"<<m2<<"="<<m3<<" in "<<t<<" clicks ("<<static_cast < double > (t)/CLOCKS_PER_SEC<<"s)."<<std::endl;
-//	std::cout<<"Calculated in "<<t<<" clicks ("<<static_cast < double > (t)/CLOCKS_PER_SEC<<"s)."<<std::endl;
-//
-
-		return 0;
-	}
+	return 0;
+}

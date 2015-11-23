@@ -49,6 +49,14 @@ namespace vectmath
 			inline size_t rows(void) const;
 			inline size_t columns(void) const;
 			template < typename data_tt > friend void swap(Matrix < data_tt >& first, Matrix < data_tt >& second);
+
+			//{{{ Static unittests
+
+#ifdef DEBUG
+			static bool test(void);
+			static bool test_vector_product(void);
+#endif
+			//}}}
 	};
 
 
@@ -263,6 +271,39 @@ namespace vectmath
 		    std::swap(first.column_size, second.column_size);
 		    std::swap(first.data, second.data);
 		}
+//}}}
+
+//{{{     Static unittests
+
+#ifdef DEBUG
+//{{{    bool Matrix::test()
+
+	    template < typename data_t >
+	    bool Matrix<data_t>::test(void)
+	    {
+			bool retval = true;
+			std::cout<<"	Testing Matrix class:"<<std::endl;
+			!test_vector_product() && (retval=false);
+
+			std::cout<<(retval?"	-> Success!":"-> Failure!")<<std::endl;
+			return retval;
+		}
+//}}}
+//{{{    bool Matrix::test_vector_product()
+
+	    template < typename data_t >
+	    bool Matrix<data_t>::test_vector_product(void)
+	    {
+			bool retval=true;
+			std::cout<<"		- Vector product: ";
+			Vector<data_t>x={1,2,3};
+			Matrix<data_t>A={{1,2,3},{4,5,6},{7,8,9},{10,11,12}};
+			!(A*x == Vector<data_t>{14,32,50,68}) && (retval=false);
+			std::cout<<(retval?"...passed":"...failed")<<std::endl;
+			return retval;
+		}
+//}}}
+#endif
 //}}}
 
 }	/* namespace vectmath */
