@@ -178,6 +178,7 @@ selftest: all
 .PHONY: benchmark
 benchmark: all
 	@echo -e  "\n$(ECHO)----Generating the Benchmark Data"
+	$(Q)rm -rf benchmark_data
 	$(BUILDDIR)/$(BINARY).elf -d 100 -i 10 -b
 	$(BUILDDIR)/$(BINARY).elf -d 500 -i 10 -b
 	$(BUILDDIR)/$(BINARY).elf -d 1000 -i 10 -b
