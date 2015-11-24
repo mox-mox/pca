@@ -175,31 +175,18 @@ selftest: all
 
 .PHONY: benchmark
 benchmark: all
-	$(BUILDDIR)/$(BINARY).elf -d 100 -t  1 -i 10
-	$(BUILDDIR)/$(BINARY).elf -d 100 -t  2 -i 10
-	$(BUILDDIR)/$(BINARY).elf -d 100 -t  4 -i 10
-	$(BUILDDIR)/$(BINARY).elf -d 100 -t  8 -i 10
-	$(BUILDDIR)/$(BINARY).elf -d 100 -t 16 -i 10
-	$(BUILDDIR)/$(BINARY).elf -d 100 -t 32 -i 10
-	$(BUILDDIR)/$(BINARY).elf -d 500 -t  1 -i 10
-	$(BUILDDIR)/$(BINARY).elf -d 500 -t  2 -i 10
-	$(BUILDDIR)/$(BINARY).elf -d 500 -t  4 -i 10
-	$(BUILDDIR)/$(BINARY).elf -d 500 -t  8 -i 10
-	$(BUILDDIR)/$(BINARY).elf -d 500 -t 16 -i 10
-	$(BUILDDIR)/$(BINARY).elf -d 500 -t 32 -i 10
-	$(BUILDDIR)/$(BINARY).elf -d 1000 -t  1 -i 10
-	$(BUILDDIR)/$(BINARY).elf -d 1000 -t  2 -i 10
-	$(BUILDDIR)/$(BINARY).elf -d 1000 -t  4 -i 10
-	$(BUILDDIR)/$(BINARY).elf -d 1000 -t  8 -i 10
-	$(BUILDDIR)/$(BINARY).elf -d 1000 -t 16 -i 10
-	$(BUILDDIR)/$(BINARY).elf -d 1000 -t 32 -i 10
-	$(BUILDDIR)/$(BINARY).elf -d 10000 -t  1 -i 10
-	$(BUILDDIR)/$(BINARY).elf -d 10000 -t  2 -i 10
-	$(BUILDDIR)/$(BINARY).elf -d 10000 -t  4 -i 10
-	$(BUILDDIR)/$(BINARY).elf -d 10000 -t  8 -i 10
-	$(BUILDDIR)/$(BINARY).elf -d 10000 -t 16 -i 10
-	$(BUILDDIR)/$(BINARY).elf -d 10000 -t 32 -i 10
+	#$(BUILDDIR)/$(BINARY).elf -d 100 -i 10 -b
+	#$(BUILDDIR)/$(BINARY).elf -d 500 -i 10 -b
+	#$(BUILDDIR)/$(BINARY).elf -d 1000 -i 10 -b
+	#$(BUILDDIR)/$(BINARY).elf -d 10000 -i 10 -b
+	#$(BUILDDIR)/$(BINARY).elf -d 100 -i 10 -f -b
+	#$(BUILDDIR)/$(BINARY).elf -d 500 -i 10 -f -b
+	#$(BUILDDIR)/$(BINARY).elf -d 1000 -i 10 -f -b
+	#$(BUILDDIR)/$(BINARY).elf -d 10000 -i 10 -f -b
 
+.PHONY: plots
+plots: benchmark
+	gnuplot generate_plots.gp
 
 
 -include $(OBJS:.o=.d)
