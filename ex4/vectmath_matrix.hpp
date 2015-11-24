@@ -251,7 +251,11 @@ namespace vectmath
 		typename Matrix<data_t>::Thread_args* thread_args = new typename Matrix<data_t>::Thread_args[num_threads];						// Having no VLA in C++ sucks
 		for(int i=0; i<num_threads; i++)
 		{
-			new(&thread_args[i]) typename Matrix<data_t>::Thread_args {&first, &second, &retval, static_cast<unsigned int>(i) };		// Initialise each thread data structure
+			//new(&thread_args[i]) typename Matrix<data_t>::Thread_args {&first, &second, &retval, static_cast<unsigned int>(i) };		// Initialise each thread data structure
+			thread_args[i].arg1=&first;					// Know what sucks even more?
+			thread_args[i].arg2=&second;					// C++11 without {brace-enclosed-init-lists]
+			thread_args[i].retval=&retval;					// Seriously, can we get g++-5.2 with support
+			thread_args[i].thread_number=static_cast<unsigned int>(i);	// for C++14? And a recent version of make?
 			pthread_create(&threads[i], nullptr, &Matrix<data_t>::matrix_by_vector_thread, reinterpret_cast<void*>(&thread_args[i]));	// And having to cast everything to void* is a disappointment, too.
 		}
 		for(int i=0; i<num_threads; i++)

@@ -26,7 +26,7 @@ endif
 ###############################################################################
 #Where to build the project
 
-BUILDDIR ::= builddir
+BUILDDIR = builddir
 
 # A macro to create neccesary directories
 DIR_GUARD = @mkdir -p $(@D)
@@ -37,14 +37,16 @@ DIR_GUARD = @mkdir -p $(@D)
 
 
 # VPATH is makes' search path for source- and target files
-VPATH ::= $(CURDIR)
+#CURDIR := $(abspath $(lastword $(MAKEFILE_LIST)))
+#VPATH := $(CURDIR)
+VPATH = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
 # Find all source files
 dirwild = $(foreach f,$(wildcard $1*),$(call dirwild,$f/) $f)
-SOURCE_FILES := $(realpath $(filter %.c %.cpp %.cxx %.c++, $(call dirwild, $(strip $(subst :, ,$(VPATH))))))
+SOURCE_FILES = $(realpath $(filter %.c %.cpp %.cxx %.c++, $(call dirwild, $(strip $(subst :, ,$(VPATH))))))
 
-OBJS ::= $(patsubst %.cpp,%.o,$(filter %.cpp, $(SOURCE_FILES)))
-OBJS ::= $(addprefix $(BUILDDIR)/,$(OBJS))
+OBJS = $(patsubst %.cpp,%.o,$(filter %.cpp, $(SOURCE_FILES)))
+OBJS := $(addprefix $(BUILDDIR)/,$(OBJS))
 
 ###############################################################################
 # Executables
@@ -87,7 +89,7 @@ endif
 # C++ flags
 
 #CXXFLAGS	+= $(COMMONFLAGS) -Wold-style-cast -std=gnu++14# -Weffc++
-CXXFLAGS	+= $(COMMONFLAGS)  -std=gnu++14# -Weffc++
+CXXFLAGS	+= $(COMMONFLAGS)  -std=gnu++11# -Weffc++
 
 ###############################################################################
 # Linker flags
@@ -175,17 +177,19 @@ selftest: all
 
 .PHONY: benchmark
 benchmark: all
-	#$(BUILDDIR)/$(BINARY).elf -d 100 -i 10 -b
-	#$(BUILDDIR)/$(BINARY).elf -d 500 -i 10 -b
-	#$(BUILDDIR)/$(BINARY).elf -d 1000 -i 10 -b
-	#$(BUILDDIR)/$(BINARY).elf -d 10000 -i 10 -b
-	#$(BUILDDIR)/$(BINARY).elf -d 100 -i 10 -f -b
-	#$(BUILDDIR)/$(BINARY).elf -d 500 -i 10 -f -b
-	#$(BUILDDIR)/$(BINARY).elf -d 1000 -i 10 -f -b
-	#$(BUILDDIR)/$(BINARY).elf -d 10000 -i 10 -f -b
+	@echo -e  "\n$(ECHO)----Generating the Benchmark Data"
+	$(BUILDDIR)/$(BINARY).elf -d 100 -i 10 -b
+	$(BUILDDIR)/$(BINARY).elf -d 500 -i 10 -b
+	$(BUILDDIR)/$(BINARY).elf -d 1000 -i 10 -b
+	$(BUILDDIR)/$(BINARY).elf -d 10000 -i 10 -b
+	$(BUILDDIR)/$(BINARY).elf -d 100 -i 10 -f -b
+	$(BUILDDIR)/$(BINARY).elf -d 500 -i 10 -f -b
+	$(BUILDDIR)/$(BINARY).elf -d 1000 -i 10 -f -b
+	$(BUILDDIR)/$(BINARY).elf -d 10000 -i 10 -f -b
 
 .PHONY: plots
 plots: benchmark
+	@echo -e  "\n$(ECHO)----Plotting the Benchmark Data"
 	gnuplot generate_plots.gp
 
 
