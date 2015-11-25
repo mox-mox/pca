@@ -21,6 +21,7 @@ set multiplot layout 2,2 rowsfirst title "Execution Times For The Matrix Multipl
 set key left top
 set title "Using single precission math"
 unset xlabel
+set xrange [80:12000]
 set xtics ( '' 100, '' 500, '' 1000, '' 10000 );
 set ylabel "Execution Time [CPU ticks]"
 plot "benchmark_data/benchmark_results_float.dat" using 1:2 with linespoints title "1 Thread ", \
