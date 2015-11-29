@@ -17,8 +17,10 @@ int num_threads;
 #endif
 
 
+//#define NUM_ITERATIONS 100 // Number of runns for a Benchmark
 #define NUM_ITERATIONS 1 // Number of runns for a Benchmark
-#define N 10              // Size of the array
+//#define N 700              // Size of the array
+#define N 20              // Size of the array
 
 #include "getopt_pp.hpp"
 
@@ -38,11 +40,11 @@ int main(int argc, char* argv[])
 
 	try
 	{
-		ops >> GetOpt::Option('s', "steps", steps, 3);
+		ops >> GetOpt::Option('s', "steps", steps, 100);
 		ops >> GetOpt::Option('r', "radius", radius, 3);
 		ops >> GetOpt::Option('h', "heat", heat, 127.0);
 #ifdef VECTORISE
-		ops >> GetOpt::Option('t', "threads", num_threads, 10);
+		ops >> GetOpt::Option('t', "threads", num_threads, 12);
 #endif
 	}
 	catch(GetOpt::GetOptEx ex)
@@ -68,17 +70,25 @@ int main(int argc, char* argv[])
 		{
 			rdtsc(t0);
 			Relaxation < N > relax(radius, heat);
+#ifdef DEBUG
 			std::cout<<"Relaxation created"<<std::endl;
 			relax.print_grid();
+#endif
 			for(int s=1; s <= steps; s++)
 			{
+#ifdef DEBUG
 				std::cout<<"Iteration"<<std::endl;
+#endif
 				relax.iterate();
+#ifdef DEBUG
 				relax.print_grid();
+#endif
 			}
 			rdtsc(t1);
 			t_ges += t1-t0;
-			//std::cout<<"This run took "<<(t1-t0)<<" clock cycles"<<std::endl;
+#ifdef DEBUG
+			std::cout<<"This run took "<<(t1-t0)<<" clock cycles"<<std::endl;
+#endif
 		}
 		std::cout<<"Timing: Used "<<t_ges<<" clock cycles total, "<<t_ges/NUM_ITERATIONS<<" cycles per run on average. (for N = "<<N<<", "<<steps<<" steps and "<<NUM_ITERATIONS<<" repetitions)"<<std::endl;
 
