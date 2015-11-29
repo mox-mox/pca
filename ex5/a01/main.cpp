@@ -12,43 +12,50 @@
 
 
 
+#ifdef VECTORISE
+int num_threads;
+#endif
 
 
-#define N 500
+#define NUM_ITERATIONS 1 // Number of runns for a Benchmark
+#define N 10              // Size of the array
 
 #include "getopt_pp.hpp"
 
-using namespace GetOpt;
+//using namespace GetOpt;
 
 int main(int argc, char* argv[])
 {
 	int steps;
 	int radius;
 	double heat;
-	bool timing;
 
 	int ret=1;
 
-	GetOpt_pp ops(argc, argv);
+	GetOpt::GetOpt_pp ops(argc, argv);
 
 	ops.exceptions(std::ios::failbit | std::ios::eofbit);
 
 	try
 	{
-		ops >> Option('s', "steps", steps, 100)
-		>> Option('r', "radius", radius, 5)
-		>> Option('h', "heat", heat, 127.0)
-		>> OptionPresent('t', "timing", timing);
+		ops >> GetOpt::Option('s', "steps", steps, 3);
+		ops >> GetOpt::Option('r', "radius", radius, 3);
+		ops >> GetOpt::Option('h', "heat", heat, 127.0);
+#ifdef VECTORISE
+		ops >> GetOpt::Option('t', "threads", num_threads, 10);
+#endif
 	}
 	catch(GetOpt::GetOptEx ex)
 	{
 		std::cerr << "Error in arguments" << std::endl;
 		std::cerr << "Usage: "<<argv[0]<<" [options]"<<std::endl;
 		std::cerr << "Options:"<<std::endl;
-		std::cerr << "-s <NUM>: Set the number of simulation steps."<<std::endl;
-		std::cerr << "-r <NUM>: Set the radius of the stimuli."<<std::endl;
-		std::cerr << "-h <NUM>: Set the heat of the stimuli."<<std::endl;
-		std::cerr << "-t      : Do a timing run. There won't be much output except the timing results."<<std::endl;
+		std::cerr << "-s|--steps   <NUM>: Set the number of simulation steps."<<std::endl;
+		std::cerr << "-r|--radius  <NUM>: Set the radius of the stimuli."<<std::endl;
+		std::cerr << "-h|--heat    <NUM>: Set the heat of the stimuli."<<std::endl;
+#ifdef VECTORISE
+		std::cerr << "-t|--threads <NUM>:    Set the number of threads that are started for the computation of the multiplication."<<std::endl;
+#endif
 		return -1;
 	}
 
@@ -57,20 +64,23 @@ int main(int argc, char* argv[])
 		uint64_t t_ges=0;
 		std::cout<<"Timing for N = "<<N<<" with "<<steps<<" iterations"<<std::endl;
 
-#define NUM_ITERATIONS 100
 		for(int i=0; i < NUM_ITERATIONS; i++)
 		{
 			rdtsc(t0);
 			Relaxation < N > relax(radius, heat);
+			std::cout<<"Relaxation created"<<std::endl;
+			relax.print_grid();
 			for(int s=1; s <= steps; s++)
 			{
+				std::cout<<"Iteration"<<std::endl;
 				relax.iterate();
+				relax.print_grid();
 			}
 			rdtsc(t1);
 			t_ges += t1-t0;
 			//std::cout<<"This run took "<<(t1-t0)<<" clock cycles"<<std::endl;
 		}
-		std::cout<<"Timing: Used "<<t_ges<<" clock cycles total, "<<t_ges/NUM_ITERATIONS<<" cycles per run on average. (for N = "<<N<<", "<<steps<<" iterations)"<<std::endl;
+		std::cout<<"Timing: Used "<<t_ges<<" clock cycles total, "<<t_ges/NUM_ITERATIONS<<" cycles per run on average. (for N = "<<N<<", "<<steps<<" steps and "<<NUM_ITERATIONS<<" repetitions)"<<std::endl;
 
 	return ret;
 }
