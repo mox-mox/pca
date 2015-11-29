@@ -74,7 +74,7 @@ COMMONFLAGS	+= -Wall -Wextra -Wpedantic -Werror  -Wredundant-decls
 COMMONFLAGS	+= -fno-common -ffunction-sections -fdata-sections
 COMMONFLAGS	+= -MD #-Wundef
 COMMONFLAGS	+= -Wno-packed-bitfield-compat # TODO: Remove this
-COMMONFLAGS += -Wno-unused-function -Wno-unused-parameter
+COMMONFLAGS += -Wno-unused-function -Wno-unused-parameter -Wno-unused-variable
 COMMONFLAGS	+= -Iextern
 #COMMONFLAGS	+= -Wpadded -Winline
 ifneq ($(DEBUG_BUILD), 0)

@@ -13,14 +13,16 @@
 #include <sys/stat.h>
 #include "utils.h"
 
+#define STRINGIFY(s) XSTRINGIFY(s)
+#define XSTRINGIFY(s) #s
 
 
-#define OPTIMISE CACHE
+
 //#define OPTIMISE RUNTIME
-
-#if !defined OPTIMISE || (OPTIMISE != CACHE) && (OPTIMISE != RUNTIME)
-	#error "Please define OPTIMISE to CACHE or RUNTIME."
-#endif
+//
+//#if !defined OPTIMISE || (OPTIMISE != CACHE) && (OPTIMISE != RUNTIME)
+//	#error "Please define OPTIMISE to CACHE or RUNTIME."
+//#endif
 
 template < int64_t N >
 class Relaxation
@@ -39,6 +41,7 @@ class Relaxation
 
 
 		void fill_grid(double(Relaxation < N > ::*grid_point_value_function)(int64_t i, int64_t j), std::array < std::array < double, N >, N >& grid);
+		inline void fill_line(double(Relaxation < N > ::*grid_point_value_function)(int64_t i, int64_t j), std::array < double, N >& grid, int64_t i);
 
 
 #ifdef DEBUG
@@ -77,7 +80,6 @@ Relaxation < N > ::Relaxation(double max_theta, double phi, int64_t I, int64_t J
 		throw std::logic_error("The stimulus value \"H\" must be smaller than the maximum stimulus \"max_theta\".");
 	}
 
-
 	fill_grid(&Relaxation::init_value, grid);
 }
 
@@ -90,48 +92,32 @@ Relaxation < N > ::Relaxation(double R, double H) throw(std::logic_error) : Rela
 template < int64_t N >
 void Relaxation < N > ::fill_grid(double(Relaxation < N > ::*grid_point_value_function)(int64_t i, int64_t j), std::array < std::array < double, N >, N > &grid)
 {
-#if OPTIMISE == RUNTIME	// When optimising the "runtime" use logic to reduce number of operations.
-	// Initialise the edges (which are always 0) before the rest.
-	for(int64_t i=0; i < N; i++)
-	{
+	for(int64_t j=1; j < N-1; j++) // ->
+		grid[0][j] = grid[N-1][j] = 0;
+	for(int64_t i=1; i < N-1; i++)     // |
+	{                                  // V
 		grid[i][0] = 0;
-	}
-	for(int64_t i=0; i < N; i++)
-	{
+		for(int64_t j=1; j < N-1; j++) // ->
+		{
+			grid[i][j] = (this->*grid_point_value_function)(i, j);
+		}
 		grid[i][N-1] = 0;
+		//fill_line(&Relaxation::new_value, grid[i], i);
 	}
-	for(int64_t j=0; j < N; j++)
+}
+//}}}
+
+//{{{ fill_line(grid_point_value_function, &grid)
+
+template < int64_t N >
+void Relaxation < N > ::fill_line(double(Relaxation < N > ::*grid_point_value_function)(int64_t i, int64_t j), std::array < double, N > &grid, int64_t i)
+{
+	grid[0] = 0;
+	for(int64_t j=1; j < N-1; j++) // ->
 	{
-		grid[0][j] = 0;
+		grid[j] = (this->*grid_point_value_function)(i, j);
 	}
-	for(int64_t j=0; j < N; j++)
-	{
-		grid[N-1][j] = 0;
-	}
-	// Initialise only the inner part of the grid.
-	for(int64_t j=1; j < N-1; j++)				// |
-	{											// V
-		for(int64_t i=1; i < N-1; i++)			// ->
-		{
-			grid[i][j] = (this->*grid_point_value_function)(i, j);
-			//int64_t i_dist = I-i;
-			//int64_t j_dist = J-j;
-			//int64_t dist = std::sqrt((i_dist*i_dist)+(j_dist*j_dist));
-			//grid[i][j] = dist < R ? H : 0;
-		}
-	}
-#elif OPTIMISE == CACHE	// When optimising for cache coherence, accept a branch within the loops but fetch the data only once
-	// Initialise all of the array in one run.
-	for(int64_t j=0; j < N; j++)				// |
-	{											// V
-		for(int64_t i=0; i < N; i++)			// ->
-		{
-			grid[i][j] = (this->*grid_point_value_function)(i, j);
-		}
-	}
-#else
-	#error "Please define OPTIMISE to CACHE or RUNTIME."
-#endif
+	grid[N-1] = 0;
 }
 //}}}
 
@@ -141,14 +127,9 @@ template < int64_t N >
 double Relaxation < N > ::init_value(int64_t i, int64_t j)
 {
 	double dist;
-	// For N>>0 it is probably faster, to avoid the branch
-	//if(!j || j==N-1 || !i || i==N-1)
-	//	dist=0;
-	//else {
 	int64_t i_dist = I-i;
 	int64_t j_dist = J-j;
 	dist = std::sqrt((i_dist*i_dist)+(j_dist*j_dist));
-	//}
 	return dist < R ? H : 0;
 }
 //}}}

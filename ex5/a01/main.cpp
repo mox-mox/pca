@@ -14,7 +14,7 @@
 
 
 
-#define BOX_SIZE 100
+#define N 500
 
 #include "getopt_pp.hpp"
 
@@ -55,22 +55,22 @@ int main(int argc, char* argv[])
 		uint64_t t0;
 		uint64_t t1;
 		uint64_t t_ges=0;
-		std::cout<<"Timing for N = "<<BOX_SIZE<<" with "<<steps<<" iterations"<<std::endl;
+		std::cout<<"Timing for N = "<<N<<" with "<<steps<<" iterations"<<std::endl;
 
 #define NUM_ITERATIONS 100
 		for(int i=0; i < NUM_ITERATIONS; i++)
 		{
 			rdtsc(t0);
-			Relaxation < BOX_SIZE > relax(radius, heat);
+			Relaxation < N > relax(radius, heat);
 			for(int s=1; s <= steps; s++)
 			{
 				relax.iterate();
 			}
 			rdtsc(t1);
 			t_ges += t1-t0;
-			std::cout<<"This run took "<<(t1-t0)<<" clock cycles"<<std::endl;
+			//std::cout<<"This run took "<<(t1-t0)<<" clock cycles"<<std::endl;
 		}
-		std::cout<<"Timing: Used "<<t_ges<<" clock cycles total, "<<t_ges/NUM_ITERATIONS<<" cycles per run on average. (for N = "<<BOX_SIZE<<", "<<steps<<" iterations)"<<std::endl;
+		std::cout<<"Timing: Used "<<t_ges<<" clock cycles total, "<<t_ges/NUM_ITERATIONS<<" cycles per run on average. (for N = "<<N<<", "<<steps<<" iterations)"<<std::endl;
 
 	return ret;
 }
