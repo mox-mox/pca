@@ -18,7 +18,7 @@ extern int num_threads;	// When using the vectorised version, the number of thre
 #include <pthread.h>
 #endif
 
-template < int64_t N >
+template < int64_t size >
 class Relaxation
 {
 	private:
@@ -30,15 +30,15 @@ class Relaxation
 		const int64_t J; // Number of Colums
 		const int64_t R; // Radius of the initial stimulus
 		const int64_t H; // Initial heat
-		std::array < std::array < double, N >, N > grid;
+		std::array < std::array < double, size >, size >* grid;
 		//}}}
 
 		//{{{ Thread Control
 #ifdef VECTORISE
 
 		pthread_t* threads;
-		double(Relaxation<N>::*current_op)(int64_t i, int64_t j);
-		std::array < std::array < double, N >, N >* new_grid;
+		double(Relaxation<size>::*current_op)(int64_t i, int64_t j);
+		std::array < std::array < double, size >, size >* new_grid;
 		pthread_barrier_t start_barrier;
 		pthread_barrier_t stop_barrier;
 		static void* thread_worker(void*);
@@ -69,18 +69,14 @@ class Relaxation
 		void print_grid();
 };
 
-
-
-
-
 //{{{ Constructors
 
 //{{{Relaxation()
 
 //{{{
 #ifdef VECTORISE
-template < int64_t N >
-Relaxation < N > ::Relaxation(double max_theta, double phi, int64_t I, int64_t J, double R, double H) throw(std::logic_error) : max_theta(max_theta), phi(phi), I(I), J(J), R(R), H(H), threads(new pthread_t[num_threads])
+template < int64_t size >
+Relaxation < size > ::Relaxation(double max_theta, double phi, int64_t I, int64_t J, double R, double H) throw(std::logic_error) : max_theta(max_theta), phi(phi), I(I), J(J), R(R), H(H), grid(new std::array < std::array < double, size >, size >), threads(new pthread_t[num_threads])
 {
 	//{{{ Sanity checks
 
@@ -88,11 +84,11 @@ Relaxation < N > ::Relaxation(double max_theta, double phi, int64_t I, int64_t J
 	{
 		throw std::logic_error("The radius \"R\" has to be at least 1.");
 	}
-	if((I < 1) || (I >= N-1) || (J < 1) || (J >= N-1))
+	if((I < 1) || (I >= size-1) || (J < 1) || (J >= size-1))
 	{
 		throw std::logic_error("The focus of the stimulus has to be within the inner part of the grid (not on the edge).");
 	}
-	if((I-R < 0) || (I+R > N) || (J-R < 0) || (J+R > N))
+	if((I-R < 0) || (I+R > size) || (J-R < 0) || (J+R > size))
 	{
 		throw std::logic_error("The stimulated area exceeds the allowed area (the inner part of the grid, that is not the edge).");
 	}
@@ -119,18 +115,18 @@ Relaxation < N > ::Relaxation(double max_theta, double phi, int64_t I, int64_t J
 	}
 
 	current_op=&Relaxation::init_value;
-	new_grid=&grid;
+	new_grid=grid;
     pthread_barrier_wait (&start_barrier);
 	delete[] ta;
-	for(int64_t j=0; j < N; j++) // ->
-		grid[0][j] = grid[N-1][j] = 0;
+	for(int64_t j=0; j < size; j++) // ->
+		(*grid)[0][j] = (*grid)[size-1][j] = 0;
     pthread_barrier_wait (&stop_barrier);
 }
 #else
 //}}}
 //{{{
-template < int64_t N >
-Relaxation < N > ::Relaxation(double max_theta, double phi, int64_t I, int64_t J, double R, double H) throw(std::logic_error) : max_theta(max_theta), phi(phi), I(I), J(J), R(R), H(H)
+template < int64_t size >
+Relaxation < size > ::Relaxation(double max_theta, double phi, int64_t I, int64_t J, double R, double H) throw(std::logic_error) : max_theta(max_theta), phi(phi), I(I), J(J), R(R), H(H),  grid(new std::array < std::array < double, size >, size >)
 {
 	//{{{ Sanity checks
 
@@ -138,11 +134,11 @@ Relaxation < N > ::Relaxation(double max_theta, double phi, int64_t I, int64_t J
 	{
 		throw std::logic_error("The radius \"R\" has to be at least 1.");
 	}
-	if((I < 1) || (I >= N-1) || (J < 1) || (J >= N-1))
+	if((I < 1) || (I >= size-1) || (J < 1) || (J >= size-1))
 	{
 		throw std::logic_error("The focus of the stimulus has to be within the inner part of the grid (not on the edge).");
 	}
-	if((I-R < 0) || (I+R > N) || (J-R < 0) || (J+R > N))
+	if((I-R < 0) || (I+R > size) || (J-R < 0) || (J+R > size))
 	{
 		throw std::logic_error("The stimulated area exceeds the allowed area (the inner part of the grid, that is not the edge).");
 	}
@@ -152,28 +148,29 @@ Relaxation < N > ::Relaxation(double max_theta, double phi, int64_t I, int64_t J
 	}
 	//}}}
 	//TODO
-	for(int64_t j=0; j < N; j++) // ->
-		grid[0][j] = grid[N-1][j] = 0;
-	for(int64_t i=1; i < N-1; i++)     // | parallel working phase
+	for(int64_t j=0; j < size; j++) // ->
+		(*grid)[0][j] = (*grid)[size-1][j] = 0;
+	for(int64_t i=1; i < size-1; i++)     // | parallel working phase
 	{                                  // V
-		grid[i][0] = 0;
-		for(int64_t j=1; j < N-1; j++) // ->
+		(*grid)[i][0] = 0;
+		for(int64_t j=1; j < size-1; j++) // ->
 		{
-			grid[i][j] = init_value(i, j);
+			(*grid)[i][j] = init_value(i, j);
 		}
-		grid[i][N-1] = 0;
+		(*grid)[i][size-1] = 0;
 	}
 }
 #endif
+//}}}
 
-template < int64_t N >
-Relaxation < N > ::Relaxation(double R, double H) throw(std::logic_error) : Relaxation < N > ::Relaxation(127.0, 6.0/25.0, N/2, N/2, R, H) {}
+template < int64_t size >
+Relaxation < size > ::Relaxation(double R, double H) throw(std::logic_error) : Relaxation < size > ::Relaxation(127.0, 6.0/25.0, size/2, size/2, R, H) {}
 //}}}
 //{{{~Relaxation()
 
 #ifdef VECTORISE
-template<int64_t N>
-Relaxation<N>::~Relaxation()
+template<int64_t size>
+Relaxation<size>::~Relaxation()
 {
 	current_op = nullptr;
 	pthread_barrier_wait (&start_barrier);
@@ -190,8 +187,8 @@ Relaxation<N>::~Relaxation()
 //{{{ Thread_worker
 
 #ifdef VECTORISE
-template<int64_t N>
-void* Relaxation<N>::thread_worker(void* args)
+template<int64_t size>
+void* Relaxation<size>::thread_worker(void* args)
 {
 	if(!args) { std::cerr<<"Thread worker: No args supplied. Aborting..."<<std::endl; exit(-1); }
 
@@ -205,14 +202,14 @@ void* Relaxation<N>::thread_worker(void* args)
 		if(!me->current_op) return nullptr;
 		//if(!me->current_op) { std::string td="Thread worker "+std::to_string(num)+": returning.\n"; std::cout<<td<<std::flush; return nullptr; }
 		//else { std::string td="Thread worker "+std::to_string(num)+": Starting parallel working phase.\n"; std::cout<<td<<std::flush; }
-		for(int64_t i=num+1; i < N-1; i+=num_threads)     // | parallel working phase
+		for(int64_t i=num+1; i < size-1; i+=num_threads)     // | parallel working phase
 		{                                  // V
 			(*me->new_grid)[i][0] = 0;
-			for(int64_t j=1; j < N-1; j++) // ->
+			for(int64_t j=1; j < size-1; j++) // ->
 			{
 				(*me->new_grid)[i][j] = (me->*(me->current_op))(i, j);
 			}
-			(*me->new_grid)[i][N-1] = 0;
+			(*me->new_grid)[i][size-1] = 0;
 		}
 		pthread_barrier_wait (&me->stop_barrier);
 	}
@@ -225,8 +222,8 @@ void* Relaxation<N>::thread_worker(void* args)
 
 //{{{ init_value(i, j)
 
-template < int64_t N >
-double Relaxation < N > ::init_value(int64_t i, int64_t j)
+template < int64_t size >
+double Relaxation < size > ::init_value(int64_t i, int64_t j)
 {
 	//std::cout<<"I";
 	double dist;
@@ -239,17 +236,17 @@ double Relaxation < N > ::init_value(int64_t i, int64_t j)
 
 //{{{ new_value(i, j)
 
-template < int64_t N >
+template < int64_t size >
 #ifdef DEBUG
-double Relaxation < N > ::new_value(int64_t i, int64_t j) throw(std::logic_error)
+double Relaxation < size > ::new_value(int64_t i, int64_t j) throw(std::logic_error)
 {
-	if((i < 1) || (i > N-2) || (j < 1) || (j > N-2)) throw std::logic_error("new_value(): i="+std::to_string(i)+" or j="+std::to_string(j)+" are out of bounds.");
+	if((i < 1) || (i > size-2) || (j < 1) || (j > size-2)) throw std::logic_error("new_value(): i="+std::to_string(i)+" or j="+std::to_string(j)+" are out of bounds.");
 #else
-double Relaxation < N > ::new_value(int64_t i, int64_t j)
+double Relaxation < size > ::new_value(int64_t i, int64_t j)
 {
 #endif
-	//std::cout<<"N";
-	double retval = grid[i][j] + phi * (-4*grid[i][j] + grid[i+1][j] + grid[i-1][j] + grid[i][j+1] + grid[i][j-1]);
+	//std::cout<<"size";
+	double retval = (*grid)[i][j] + phi * (-4*(*grid)[i][j] + (*grid)[i+1][j] + (*grid)[i-1][j] + (*grid)[i][j+1] + (*grid)[i][j-1]);
 	// Implement saturation
 	if( retval < 0) retval = 0;
 	else if(retval > max_theta) retval = max_theta;
@@ -262,50 +259,53 @@ double Relaxation < N > ::new_value(int64_t i, int64_t j)
 //{{{ iterate()
 
 #ifdef VECTORISE
-template < int64_t N >
-void Relaxation < N > ::iterate()
+template < int64_t size >
+void Relaxation < size > ::iterate()
 {
-	std::array < std::array < double, N >, N > t_plus;
+	//std::array < std::array < double, size >, size > t_plus;
+	new_grid = new std::array < std::array < double, size >, size >;
 	current_op=&Relaxation::new_value;
-	new_grid=&t_plus;
     pthread_barrier_wait (&start_barrier);
-	for(int64_t j=0; j < N; j++) // ->
-		t_plus[0][j] = t_plus[N-1][j] = 0;
+	for(int64_t j=0; j < size; j++) // ->
+		(*new_grid)[0][j] = (*new_grid)[size-1][j] = 0;
     pthread_barrier_wait (&stop_barrier);
-	grid = std::move(t_plus);
+	delete[] grid;
+	grid = new_grid;
 }
 #else
-template < int64_t N >
-void Relaxation < N > ::iterate()
+template < int64_t size >
+void Relaxation < size > ::iterate()
 {
-	std::array < std::array < double, N >, N > t_plus;
+	std::array < std::array < double, size >, size >* t_plus = new std::array < std::array < double, size >, size >;
 	//TODO
-	for(int64_t j=0; j < N; j++) // ->
-		t_plus[0][j] = grid[N-1][j] = 0;
-	for(int64_t i=1; i < N-1; i++)     // | parallel working phase
+	for(int64_t j=0; j < size; j++) // ->
+		(*t_plus)[0][j] = (*grid)[size-1][j] = 0;
+	for(int64_t i=1; i < size-1; i++)     // | parallel working phase
 	{                                  // V
-		t_plus[i][0] = 0;
-		for(int64_t j=1; j < N-1; j++) // ->
+		(*t_plus)[i][0] = 0;
+		for(int64_t j=1; j < size-1; j++) // ->
 		{
-			t_plus[i][j] = new_value(i, j);
+			(*t_plus)[i][j] = new_value(i, j);
 		}
-		t_plus[i][N-1] = 0;
+		(*t_plus)[i][size-1] = 0;
 	}
-	grid = std::move(t_plus);
+	delete[] grid;
+	grid = t_plus;
+	//(*grid) = std::move((*t_plus));
 }
 #endif
 //}}}
 
 //{{{ print_grid()
 
-template < int64_t N >
-void Relaxation < N > ::print_grid()
+template < int64_t size >
+void Relaxation < size > ::print_grid()
 {
-	for(int64_t i=0; i < N; i++)     // |
+	for(int64_t i=0; i < size; i++)     // |
 	{                                // V
-		for(int64_t j=0; j < N; j++) // ->
+		for(int64_t j=0; j < size; j++) // ->
 		{
-			std::cout<<std::setprecision(4)<<std::setfill(' ')<<std::setw(9)<<grid[i][j]<<" ";
+			std::cout<<std::setprecision(4)<<std::setfill(' ')<<std::setw(9)<<(*grid)[i][j]<<" ";
 		}
 		std::cout<<std::endl;
 	}

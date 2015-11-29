@@ -4,10 +4,23 @@
 
 
 
+# The name of the geneated binary
+BINARY      ?= relaxation
 
-BINARY = ueberproject
-DEBUG_BUILD=1
-VECTORISE=1
+# If not 0 debug information will be generated and the program will work in verbose mode
+DEBUG_BUILD ?=0
+
+# If not 0, the generated binary will run in parallel mode, else it will run sequentially
+VECTORISE   ?=1
+
+# The optimisation parameter to the compiler. Possible values: 0 1 2 3 s
+OPTIMISE    ?=3
+
+# The size of the array
+ARRAYSIZE   ?=1024
+
+# The number of repetitions of the benchmark run
+REPETITIONS ?=100
 
 # AB HIER FINGER WEG!
 ###################################################################################################
@@ -69,23 +82,25 @@ SIZE			:= size
 # Used libraries
 
 LDLIBS		+= -pthread
+DEFS        += -DN=$(ARRAYSIZE)
+DEFS        += -DREPETITIONS=$(REPETITIONS)
 
 ################################################################################
 # C & C++ common flags
 
 #Note: -isystem cannot be used with C++ files, because it implicitly adds extern "C" to each file :(
 #COMMONFLAGS	+= -Os -ggdb -Wshadow $(DEFS)
-COMMONFLAGS	+= -O3 -ggdb $(DEFS)
-#COMMONFLAGS	+= -Wall -Wextra -Wpedantic -Werror -Wfatal-errors -Wredundant-decls
-COMMONFLAGS	+= -Wall -Wextra -Wpedantic -Werror  -Wredundant-decls
+COMMONFLAGS	+= -O$(OPTIMISE) $(DEFS)
+COMMONFLAGS	+= -Wall -Wextra -Wpedantic -Werror -Wfatal-errors -Wredundant-decls
+#COMMONFLAGS	+= -Wall -Wextra -Wpedantic -Werror  -Wredundant-decls
 COMMONFLAGS	+= -fno-common -ffunction-sections -fdata-sections
 COMMONFLAGS	+= -MD #-Wundef
 COMMONFLAGS	+= -Wno-packed-bitfield-compat # TODO: Remove this
-COMMONFLAGS += -Wno-unused-function -Wno-unused-parameter -Wno-unused-variable
+#COMMONFLAGS += -Wno-unused-function -Wno-unused-parameter -Wno-unused-variable
 COMMONFLAGS	+= -Iextern
 #COMMONFLAGS	+= -Wpadded -Winline
 ifneq ($(DEBUG_BUILD), 0)
-	COMMONFLAGS += -DDEBUG
+COMMONFLAGS	+= -ggdb -DDEBUG
 endif
 ifneq ($(VECTORISE), 0)
 	COMMONFLAGS += -DVECTORISE
@@ -102,7 +117,7 @@ CXXFLAGS	+= $(COMMONFLAGS)  -std=gnu++11# -Weffc++
 
 ##LDFLAGS		+= $(addprefix -L, $(dir $(LIBS)))
 ##LDFLAGS		+= -L..
-LDFLAGS		+= -Wl,-Map=$(@).map
+LDFLAGS		+= -Wl,-Map=$(BUILDDIR)/$(@).map
 LDFLAGS		+= -Wl,--gc-sections
 
 ###############################################################################
@@ -129,7 +144,7 @@ endif
 
 all: begin prog
 
-prog: $(BUILDDIR)/$(BINARY).elf
+prog: $(BINARY).elf
 
 compilerversion = $(shell $(CC) --version | head -n1)
 
@@ -142,11 +157,11 @@ begin:
 	@echo -e "The Compiler in use: $(compilerversion)"
 	@echo -e "\n###################################################################################################################################\n"
 
-$(BUILDDIR)/$(BINARY).elf: $(OBJS)
+$(BINARY).elf: $(OBJS)
 	@echo -e  "\n$(ECHO)----Linking $^ to $@"
 	$(DIR_GUARD)
 	$(Q)$(LD) $(LDFLAGS) $(OBJS) $(LDLIBS) -o $@
-	$(Q)$(OBJDUMP) -S $@ > $(@).list
+	$(Q)$(OBJDUMP) -S $@ > $(BUILDDIR)/$(@).list
 	@echo -e "\n###################################################################################################################################\n"
 	@echo -e "Finishing build. The sizes of the output file chunks:"
 	$(Q)$(SIZE) $@
@@ -168,6 +183,7 @@ $(BUILDDIR)/%.o: %.cpp
 clean:
 	@echo -e "\n----Cleaning the project directory"
 	$(Q)rm -rf $(BUILDDIR)
+	$(Q)rm -f $(BINARY).elf
 
 .PHONY: tags
 tags:
@@ -175,24 +191,29 @@ tags:
 
 .PHONY: valgrind
 valgrind: all
-	valgrind --leak-check=full --show-leak-kinds=all $(BUILDDIR)/$(BINARY).elf -d 1000 -t 6 -i 10
+	valgrind --leak-check=full --show-leak-kinds=all ./$(BINARY).elf
+
+.PHONY: run
+run:
+	./$(BINARY).elf -r 128
+
 
 .PHONY: selftest
 selftest: all
-	$(BUILDDIR)/$(BINARY).elf -v
+	./$(BINARY).elf -v
 
 .PHONY: benchmark
 benchmark: all
 	@echo -e  "\n$(ECHO)----Generating the Benchmark Data"
 	$(Q)rm -rf benchmark_data
-	$(BUILDDIR)/$(BINARY).elf -d 100 -i 10 -b
-	$(BUILDDIR)/$(BINARY).elf -d 500 -i 10 -b
-	$(BUILDDIR)/$(BINARY).elf -d 1000 -i 10 -b
-	$(BUILDDIR)/$(BINARY).elf -d 10000 -i 10 -b
-	$(BUILDDIR)/$(BINARY).elf -d 100 -i 10 -f -b
-	$(BUILDDIR)/$(BINARY).elf -d 500 -i 10 -f -b
-	$(BUILDDIR)/$(BINARY).elf -d 1000 -i 10 -f -b
-	$(BUILDDIR)/$(BINARY).elf -d 10000 -i 10 -f -b
+	./$(BINARY).elf -d 100 -i 10 -b
+	./$(BINARY).elf -d 500 -i 10 -b
+	./$(BINARY).elf -d 1000 -i 10 -b
+	./$(BINARY).elf -d 10000 -i 10 -b
+	./$(BINARY).elf -d 100 -i 10 -f -b
+	./$(BINARY).elf -d 500 -i 10 -f -b
+	./$(BINARY).elf -d 1000 -i 10 -f -b
+	./$(BINARY).elf -d 10000 -i 10 -f -b
 
 .PHONY: plots
 plots: benchmark
