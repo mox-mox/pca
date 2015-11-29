@@ -60,9 +60,7 @@ class Relaxation
 
 		Relaxation(double max_theta, double phi, int64_t I, int64_t J, double R, double H) throw(std::logic_error);
 		Relaxation(double R, double H) throw(std::logic_error);
-#ifdef VECTORISE
 		~Relaxation();
-#endif
 		//}}}
 
 		void iterate();
@@ -147,7 +145,7 @@ Relaxation < size > ::Relaxation(double max_theta, double phi, int64_t I, int64_
 		throw std::logic_error("The stimulus value \"H\" must be smaller than the maximum stimulus \"max_theta\".");
 	}
 	//}}}
-	//TODO
+
 	for(int64_t j=0; j < size; j++) // ->
 		(*grid)[0][j] = (*grid)[size-1][j] = 0;
 	for(int64_t i=1; i < size-1; i++)     // | parallel working phase
@@ -168,10 +166,10 @@ Relaxation < size > ::Relaxation(double R, double H) throw(std::logic_error) : R
 //}}}
 //{{{~Relaxation()
 
-#ifdef VECTORISE
 template<int64_t size>
 Relaxation<size>::~Relaxation()
 {
+#ifdef VECTORISE
 	current_op = nullptr;
 	pthread_barrier_wait (&start_barrier);
 	for(int i=0; i<num_threads; i++)
@@ -179,8 +177,9 @@ Relaxation<size>::~Relaxation()
 		pthread_join(threads[i], nullptr);
 	}
 	delete[] threads;
-}
 #endif
+	delete[] grid;
+}
 //}}}
 //}}}
 
@@ -245,7 +244,6 @@ double Relaxation < size > ::new_value(int64_t i, int64_t j) throw(std::logic_er
 double Relaxation < size > ::new_value(int64_t i, int64_t j)
 {
 #endif
-	//std::cout<<"size";
 	double retval = (*grid)[i][j] + phi * (-4*(*grid)[i][j] + (*grid)[i+1][j] + (*grid)[i-1][j] + (*grid)[i][j+1] + (*grid)[i][j-1]);
 	// Implement saturation
 	if( retval < 0) retval = 0;
@@ -277,7 +275,6 @@ template < int64_t size >
 void Relaxation < size > ::iterate()
 {
 	std::array < std::array < double, size >, size >* t_plus = new std::array < std::array < double, size >, size >;
-	//TODO
 	for(int64_t j=0; j < size; j++) // ->
 		(*t_plus)[0][j] = (*grid)[size-1][j] = 0;
 	for(int64_t i=1; i < size-1; i++)     // | parallel working phase
