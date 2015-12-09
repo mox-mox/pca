@@ -208,15 +208,15 @@ uint64_t benchmark(int threads)
 	{
 		rdtsc(t0);
 		Relaxation < T, n > relax(radius, heat);
-#ifdef DEBUG
+//#ifdef DEBUG
 		std::cout<<"Relaxation created"<<std::endl;
-		relax.print_grid();
-#endif
+//		relax.print_grid();
+//#endif
 		for(int s=1; s <= steps; s++)
 		{
-#ifdef DEBUG
+//#ifdef DEBUG
 			std::cout<<"Iteration"<<std::endl;
-#endif
+//#endif
 			relax.iterate();
 #ifdef DEBUG
 			relax.print_grid();

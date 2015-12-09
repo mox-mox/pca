@@ -19,10 +19,10 @@ OPTIMISE    ?=3
 # The size of the array
 ARRAYSIZE   ?=1024
 
-STEPS       ?=1000
+STEPS       ?=10
 
 # The number of repetitions of the benchmark run
-REPETITIONS ?=100
+REPETITIONS ?=10
 
 # AB HIER FINGER WEG!
 ###################################################################################################
