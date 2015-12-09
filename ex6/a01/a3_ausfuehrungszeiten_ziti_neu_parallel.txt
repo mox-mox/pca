@@ -1,0 +1,20 @@
+Benchmarking with 8 threads.
+    1                    1000
+π ≈ ∫ 4 / (1+x^2) dx  ≈   Σ   4 / (1+xi^2)*Δx = 3.14259248692313 was calculated in 9007570 clock cycles on average.
+    0                    i=0
+    1                   10000
+π ≈ ∫ 4 / (1+x^2) dx  ≈   Σ   4 / (1+xi^2)*Δx = 3.14169265192313 was calculated in 21068546 clock cycles on average.
+    0                    i=0
+    1                  100000
+π ≈ ∫ 4 / (1+x^2) dx  ≈   Σ   4 / (1+xi^2)*Δx = 3.14160265357313 was calculated in 34328479 clock cycles on average.
+    0                    i=0
+Benchmarking with 4 threads.
+    1                    1000
+π ≈ ∫ 4 / (1+x^2) dx  ≈   Σ   4 / (1+xi^2)*Δx = 3.14259248692313 was calculated in 18750 clock cycles on average.
+    0                    i=0
+    1                   10000
+π ≈ ∫ 4 / (1+x^2) dx  ≈   Σ   4 / (1+xi^2)*Δx = 3.14169265192313 was calculated in 171472 clock cycles on average.
+    0                    i=0
+    1                  100000
+π ≈ ∫ 4 / (1+x^2) dx  ≈   Σ   4 / (1+xi^2)*Δx = 3.14160265357312 was calculated in 1681871 clock cycles on average.
+    0                    i=0

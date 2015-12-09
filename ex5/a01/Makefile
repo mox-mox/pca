@@ -20,7 +20,7 @@ OPTIMISE    ?=3
 ARRAYSIZE   ?=1024
 
 # The number of repetitions of the benchmark run
-REPETITIONS ?=100
+REPETITIONS ?=10
 
 # AB HIER FINGER WEG!
 ###################################################################################################

@@ -18,11 +18,11 @@ int num_threads;
 #endif
 
 #ifndef N
-#define N 700
+#define N 1024
 #endif
  
 #ifndef REPETITIONS
-#define REPETITIONS 700
+#define REPETITIONS 10
 #endif
 
 
@@ -42,11 +42,11 @@ int main(int argc, char* argv[])
 	ops.exceptions(std::ios::failbit | std::ios::eofbit);
 	try
 	{
-		ops >> GetOpt::Option('s', "steps", steps, 100);
+		ops >> GetOpt::Option('s', "steps", steps, 1000);
 		ops >> GetOpt::Option('r', "radius", radius, 3);
 		ops >> GetOpt::Option('h', "heat", heat, 127.0);
 #ifdef VECTORISE
-		ops >> GetOpt::Option('t', "threads", num_threads, 3);
+		ops >> GetOpt::Option('t', "threads", num_threads, 9);
 #endif
 	}
 	catch(GetOpt::GetOptEx ex)

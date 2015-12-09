@@ -1,0 +1,9 @@
+    1                    1000
+π ≈ ∫ 4 / (1+x^2) dx  ≈   Σ   4 / (1+xi^2)*Δx = 3.14259248692312 was calculated in 58047 clock cycles on average.
+    0                    i=0
+    1                   10000
+π ≈ ∫ 4 / (1+x^2) dx  ≈   Σ   4 / (1+xi^2)*Δx = 3.14169265192314 was calculated in 637864 clock cycles on average.
+    0                    i=0
+    1                  100000
+π ≈ ∫ 4 / (1+x^2) dx  ≈   Σ   4 / (1+xi^2)*Δx = 3.14160265357315 was calculated in 6435434 clock cycles on average.
+    0                    i=0
