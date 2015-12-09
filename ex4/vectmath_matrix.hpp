@@ -9,8 +9,9 @@
 #include <memory>
 
 #ifdef VECTORISE
-extern int num_threads;	// When using the vectorised version, the number of threads to use has to be a global variable.
-#include <pthread.h>
+//extern int num_threads;	// When using the vectorised version, the number of threads to use has to be a global variable.
+//#include <pthread.h>
+#include <omp.h>                                                                    // New addition for ex6
 #endif
 
 namespace vectmath
@@ -52,10 +53,10 @@ namespace vectmath
 
 			//{{{ Thread workers
 
-#ifdef VECTORISE
-			struct Thread_args {const Matrix<data_t>* arg1=nullptr; const Vector<data_t>* arg2=nullptr; Vector<data_t>* retval=nullptr; unsigned int thread_number=0; };
-			static void* matrix_by_vector_thread(void* args);
-#endif
+//#ifdef VECTORISE
+//			struct Thread_args {const Matrix<data_t>* arg1=nullptr; const Vector<data_t>* arg2=nullptr; Vector<data_t>* retval=nullptr; unsigned int thread_number=0; };
+//			static void* matrix_by_vector_thread(void* args);
+//#endif
 
 			//}}}
 
@@ -246,27 +247,32 @@ namespace vectmath
 		if(first.columns() != second.length()) throw std::logic_error("Trying to multiply vectors of different sizes.");
 #endif
 		Vector < data_t > retval(first.rows()); // Where to store the result
-#ifdef VECTORISE
-		pthread_t* threads= new pthread_t[num_threads];
-		typename Matrix<data_t>::Thread_args* thread_args = new typename Matrix<data_t>::Thread_args[num_threads];						// Having no VLA in C++ sucks
-		for(int i=0; i<num_threads; i++)
-		{
-			//new(&thread_args[i]) typename Matrix<data_t>::Thread_args {&first, &second, &retval, static_cast<unsigned int>(i) };		// Initialise each thread data structure
-			thread_args[i].arg1=&first;					// Know what sucks even more?
-			thread_args[i].arg2=&second;					// C++11 without {brace-enclosed-init-lists]
-			thread_args[i].retval=&retval;					// Seriously, can we get g++-5.2 with support
-			thread_args[i].thread_number=static_cast<unsigned int>(i);	// for C++14? And a recent version of make?
-			pthread_create(&threads[i], nullptr, &Matrix<data_t>::matrix_by_vector_thread, reinterpret_cast<void*>(&thread_args[i]));	// And having to cast everything to void* is a disappointment, too.
-		}
-		for(int i=0; i<num_threads; i++)
-		{
-			 pthread_join(threads[i], nullptr);
-		}
-		delete[] threads;
-		delete[] thread_args;
-#else
-		for(unsigned int i=0; i < first.rows(); i++) retval[i]=first[i]*second;
-#endif
+//#ifdef VECTORISE
+//		pthread_t* threads= new pthread_t[num_threads];
+//		typename Matrix<data_t>::Thread_args* thread_args = new typename Matrix<data_t>::Thread_args[num_threads];						// Having no VLA in C++ sucks
+//		for(int i=0; i<num_threads; i++)
+//		{
+//			//new(&thread_args[i]) typename Matrix<data_t>::Thread_args {&first, &second, &retval, static_cast<unsigned int>(i) };		// Initialise each thread data structure
+//			thread_args[i].arg1=&first;					// Know what sucks even more?
+//			thread_args[i].arg2=&second;					// C++11 without {brace-enclosed-init-lists]
+//			thread_args[i].retval=&retval;					// Seriously, can we get g++-5.2 with support
+//			thread_args[i].thread_number=static_cast<unsigned int>(i);	// for C++14? And a recent version of make?
+//			pthread_create(&threads[i], nullptr, &Matrix<data_t>::matrix_by_vector_thread, reinterpret_cast<void*>(&thread_args[i]));	// And having to cast everything to void* is a disappointment, too.
+//		}
+//		for(int i=0; i<num_threads; i++)
+//		{
+//			 pthread_join(threads[i], nullptr);
+//		}
+//		delete[] threads;
+//		delete[] thread_args;
+//#else
+#pragma omp parallel for
+//#pragma omp parallel for schedule(static, 31)
+//#pragma omp parallel for schedule(dynamic, 31)
+//#pragma omp parallel for schedule(guided, 8)
+		for(unsigned int i=0; i < first.rows(); i++)
+			retval[i]=first[i]*second;
+//#endif
 		return retval;
 	}
 //}}}
@@ -286,22 +292,22 @@ namespace vectmath
 //{{{     Thread workers
 
 
-#ifdef VECTORISE
-//{{{    void* Matrix::matrix_by_vector_thread(void* args)
-
-	    template < typename data_t >
-		void* Matrix<data_t>::matrix_by_vector_thread(void* arguments)
-		{
-			typename Matrix<data_t>::Thread_args* args = reinterpret_cast<typename Matrix<data_t>::Thread_args*>(arguments);
-			for(unsigned int i=args->thread_number; i < args->arg1->rows(); i+=num_threads)
-			{
-				//std::cout<<"Thread_worker["<<args->thread_number<<"], slice("<<i<<")"<<std::endl;
-				(*(args->retval))[i]=(*(args->arg1))[i]*(*(args->arg2));
-			}
-			return nullptr;
-		}
-//}}}
-#endif
+//#ifdef VECTORISE
+////{{{    void* Matrix::matrix_by_vector_thread(void* args)
+//
+//	    template < typename data_t >
+//		void* Matrix<data_t>::matrix_by_vector_thread(void* arguments)
+//		{
+//			typename Matrix<data_t>::Thread_args* args = reinterpret_cast<typename Matrix<data_t>::Thread_args*>(arguments);
+//			for(unsigned int i=args->thread_number; i < args->arg1->rows(); i+=num_threads)
+//			{
+//				//std::cout<<"Thread_worker["<<args->thread_number<<"], slice("<<i<<")"<<std::endl;
+//				(*(args->retval))[i]=(*(args->arg1))[i]*(*(args->arg2));
+//			}
+//			return nullptr;
+//		}
+////}}}
+//#endif
 
 //}}}
 
