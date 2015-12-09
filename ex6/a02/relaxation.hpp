@@ -215,7 +215,10 @@ void Relaxation < T, size > ::iterate()
 	std::array < std::array < T, size >, size >* t_plus = new std::array < std::array < T, size >, size >;
 	for(int64_t j=0; j < size; j++) // ->
 		(*t_plus)[0][j] = (*grid)[size-1][j] = 0;
-#pragma omp parallel for
+//#pragma omp parallel for
+#pragma omp parallel for schedule(static, 31)
+//#pragma omp parallel for schedule(dynamic, 31)
+//#pragma omp parallel for schedule(guided, 8)
 	for(int64_t i=1; i < size-1; i++)     // | parallel working phase
 	{                                  // V
 		(*t_plus)[i][0] = 0;
