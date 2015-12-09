@@ -10,6 +10,7 @@
 #include <sys/time.h>
 
 #ifdef VECTORISE
+#include <omp.h>																// New addition for ex6
 int num_threads;
 #endif
 
@@ -88,31 +89,31 @@ int main(int argc, char** argv)
 #endif
 	//}}}
 
-	//{{{
-	if(!benchmark)
-	{
-		std::cout<<"Measuring execution time for calculation of y = A*x with A ∈ Mat("<<dimensions<<"x"<<dimensions<<") and x,y ∈ |R^"<<dimensions<<"."<<std::endl;
-		std::cout<<"	- Data type is "<<(use_float ? "float" : "double")<<"."<<std::endl;
-#ifdef VECTORISE
-		std::cout<<"	- Using up to "<<num_threads<<" threads."<<std::endl;
-#endif
-		std::cout<<"	- Using "<<iterations<<" iterations."<<std::endl;
+	////{{{
+	//if(!benchmark)
+	//{
+	//	std::cout<<"Measuring execution time for calculation of y = A*x with A ∈ Mat("<<dimensions<<"x"<<dimensions<<") and x,y ∈ |R^"<<dimensions<<"."<<std::endl;
+	//	std::cout<<"	- Data type is "<<(use_float ? "float" : "double")<<"."<<std::endl;
+//#ifdef VECTORISE
+	//	std::cout<<"	- Using up to "<<num_threads<<" threads."<<std::endl;
+//#endif
+	//	std::cout<<"	- Using "<<iterations<<" iterations."<<std::endl;
 
-		uint64_t cpu_ticks;
-		if(use_float)
-		{
-			cpu_ticks = benchmark_float(dimensions, iterations);
-		}
-		else
-		{
-			cpu_ticks = benchmark_double(dimensions, iterations);
-		}
+	//	uint64_t cpu_ticks;
+	//	if(use_float)
+	//	{
+	//		cpu_ticks = benchmark_float(dimensions, iterations);
+	//	}
+	//	else
+	//	{
+	//		cpu_ticks = benchmark_double(dimensions, iterations);
+	//	}
 
 
-		std::cout<<"Average execution time was "<<(cpu_ticks)<<"."<<std::endl;
-		return 0;
-	}
-	//}}}
+	//	std::cout<<"Average execution time was "<<(cpu_ticks)<<"."<<std::endl;
+	//	return 0;
+	//}
+	////}}}
 	else // Do benchmark
 	{
 		do_benchmark(dimensions, iterations, use_float);
@@ -150,6 +151,9 @@ void do_benchmark(int dimensions, int iterations, bool use_float)
 	data_output<< std::setfill(' ') << std::setw(6) <<std::to_string(dimensions);
 	for(num_threads=1; num_threads < 64; num_threads<<=1)
 	{
+		omp_set_num_threads(num_threads);
+		std::cout<<"Benchmarking with "<<omp_get_max_threads()<<" threads."<<std::endl;
+
 		std::cout<<"	- Using "<<num_threads<<" threads."<<std::endl;
 		uint64_t avg_cpu_ticks;
 		if(use_float)

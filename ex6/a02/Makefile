@@ -1,7 +1,7 @@
 
-BINARY = ueberproject
-DEBUG_BUILD=1
-VECTORISE=1
+BINARY ?= ueberproject
+DEBUG_BUILD?=1
+VECTORISE?=1
 
 
 #OPTIMISE_TRANSPOSE=1
@@ -61,7 +61,7 @@ SIZE			:= size
 ################################################################################
 # Used libraries
 
-LDLIBS		+= -pthread
+#LDLIBS		+= -pthread
 
 ################################################################################
 # C & C++ common flags
@@ -77,7 +77,7 @@ COMMONFLAGS	+= -Wno-packed-bitfield-compat # TODO: Remove this
 COMMONFLAGS += -Wno-unused-function
 COMMONFLAGS	+= -Iextern
 #COMMONFLAGS	+= -Wpadded -Winline
-COMMONFLAGS +=
+COMMONFLAGS += -fopenmp
 ifneq ($(DEBUG_BUILD), 0)
 	COMMONFLAGS += -DDEBUG
 endif
@@ -94,6 +94,8 @@ CXXFLAGS	+= $(COMMONFLAGS)  -std=gnu++11# -Weffc++
 ###############################################################################
 # Linker flags
 
+LDFLAGS		+= $(COMMONFLAGS)
+LDFLAGS		+= -Wl,-Map=$(@).map
 ##LDFLAGS		+= $(addprefix -L, $(dir $(LIBS)))
 ##LDFLAGS		+= -L..
 LDFLAGS		+= -Wl,-Map=$(@).map
