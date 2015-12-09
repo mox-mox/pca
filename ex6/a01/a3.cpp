@@ -3,7 +3,7 @@
 #include <iomanip>
 #include "utils.h"
 #ifdef PARALLEL
-#include <cstdlib>
+#include <omp.h>
 #endif
 
 
@@ -30,18 +30,18 @@ T integrate(T(*F)(T x), T lower_bound=0, T upper_bound=1)
 	// Calculate some needed constants
 	T interval = upper_bound - lower_bound;
 	T delta_x = interval/static_cast < T > (n);
-	//T xi = lower_bound + (delta_x/2);                                          // Removed for ex6
+	//T xi = lower_bound + (delta_x/2);                                             // Removed for ex6
 
 	// To the summation
 	T result = 0;
 	// Obviously OpenMP will not accept loops with two variables...
 	// It also will not accept a loop whose iteration variable is not int...
-#pragma omp parallel for reduction(+:result)                                     // New addition for ex6
-	//for(uint64_t i=0; i < n; i++, xi += delta_x)                               // Replaced this line...
-	for(uint64_t i=0; i < n; i++)                                                // ...with this one for ex6
+#pragma omp parallel for reduction(+:result)                                        // New addition for ex6
+	//for(uint64_t i=0; i < n; i++, xi += delta_x)                                  // Replaced this line...
+	for(uint64_t i=0; i < n; i++)                                                   // ...with this one for ex6
 	{
-		//result += (*F)(xi);                                                    // Replaced this line...
-		result += (*F)(i*delta_x);                                               //	...with this one for ex6
+		//result += (*F)(xi);                                                       // Replaced this line...
+		result += (*F)(i*delta_x);                                                  //	...with this one for ex6
 	}
 	return result * delta_x;
 }
@@ -59,10 +59,9 @@ int main(int argc, char** argv)
 	argc=argc;
 	argv=argv;
 
-#ifdef PARALLEL                                                                  //
-	if(const char* env_p = std::getenv("OMP_NUM_THREADS"))                       // New addition for ex6
-		std::cout << "Benchmarking with " << env_p << "threads." << std::endl;   //
-#endif                                                                           //
+#ifdef PARALLEL                                                                     // New addition for ex6
+	std::cout<<"Benchmarking with "<<omp_get_max_threads()<<" threads."<<std::endl; // New addition for ex6
+#endif                                                                              // New addition for ex6
 
 
 	uint64_t t0;
