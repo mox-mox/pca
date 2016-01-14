@@ -1,4 +1,7 @@
 #include <iostream>
+#include <iomanip>
+#include <fstream>
+#include <sys/stat.h>
 #include <vector>
 #include "getopt_pp.hpp"
 #include <random>
@@ -21,8 +24,24 @@ std::uniform_real_distribution < double > m_distribution(0, 1);
 N_body::Particle::Vec2d::Vec2d(void) : x(x_distribution(rng)), y(y_distribution(rng)) {}
 N_body::Particle::Vec2d::Vec2d(double x, double y) : x(x), y(y) {}
 N_body::Particle::Particle(void) : pos(), speed(0, 0), mass(m_distribution(rng)) {}
-N_body::N_body(int32_t count, std::string filename) : particles(count), forces(count, Particle::Force(0, 0)), filename(filename) {}
-//}}}
+
+N_body::N_body(int32_t count, int32_t mode) : particles(count), forces(count, Particle::Force(0, 0)), mode(mode)
+{
+	if( mode )
+	{
+		path = "./data/";
+
+		struct stat info;
+
+		if( stat(path.c_str(), &info))
+		{
+			std::cout<<"Creating folder \""<<path<<"\"."<<std::endl;
+			int temp = system(("mkdir "+path).c_str());
+			(void) temp;
+		}
+	}
+}
+
 
 //{{{ Operators
 
@@ -67,6 +86,23 @@ N_body::Particle::Force N_body::Particle::force(const Particle& other)
 	return (-gamma*(mass*other.mass)/(r0^2))*r0;
 }
 
+void N_body::save_state(int32_t step)
+{
+	std::ofstream data_output;
+	std::ostringstream out;
+
+	out<<std::setfill('0')<<std::setw(max_step_length)<<step;
+	data_output.open(path+"step_"+out.str()+".dat");
+	out<<std::setfill(' ')<<std::setw(10)<<"#    x_pos\t"<<"     y_pos\t"<<"     mass"<<std::endl;
+
+	for( auto& particle : particles )
+	{
+		data_output<<particle.pos.x<<"\t"<<particle.pos.y<<"\t"<<particle.mass<<std::endl;
+	}
+	data_output.close();
+}
+
+
 void N_body::iterate(void)
 {
 	//{{{ Generate the forces...
@@ -103,10 +139,11 @@ void N_body::iterate(void)
 
 void N_body::simulate(int32_t steps)
 {
-	for(int32_t i=0; i<steps; i++)
+	max_step_length = std::to_string(steps).length();
+	for( int32_t i = 0; i < steps; i++ )
 	{
 		iterate();
-
+		if( mode ) save_state(i);
 	}
 }
 
@@ -139,6 +176,7 @@ int main(int argc, char** argv)
 	double x_max;
 	double y_max;
 	double m_max;
+	bool output;
 	GetOpt::GetOpt_pp ops(argc, argv);
 	ops.exceptions(std::ios::failbit|std::ios::eofbit);
 	try
@@ -146,6 +184,7 @@ int main(int argc, char** argv)
 		ops>>GetOpt::Option('c', "count", count, 1000);
 		ops>>GetOpt::Option('d', "delta_t", delta_t, 0.1);
 		ops>>GetOpt::Option('s', "steps", steps, 100);
+		ops>>GetOpt::OptionPresent('o', "output", output);
 
 		ops>>GetOpt::Option('x', "x_max", x_max, 1000.0);
 		ops>>GetOpt::Option('y', "y_max", y_max, 1000.0);
@@ -174,8 +213,20 @@ int main(int argc, char** argv)
 	//}}}
 
 	std::cout<<"hello word!"<<std::endl;
-	N_body foo(count);
-	for( int i = 0; i < 5; i++ )
-		std::cout<<"( "<<foo.particles[i].pos.x<<" | "<<foo.particles[i].pos.y<<" )"<<std::endl;
+
+	if(output)
+	{
+		N_body experiment(count, 1);
+		experiment.simulate(100);
+	}
+
+
+
+
+
+
+	//N_body foo(count);
+	//for( int i = 0; i < 5; i++ )
+	//	std::cout<<"( "<<foo.particles[i].pos.x<<" | "<<foo.particles[i].pos.y<<" )"<<std::endl;
 	return 0;
 }

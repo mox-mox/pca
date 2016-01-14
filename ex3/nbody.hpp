@@ -41,13 +41,17 @@ class N_body
 		};
 		std::vector < Particle > particles;
 		std::vector < Particle::Force > forces;
-		std::string filename;
+
+		int32_t mode;			// 0=run fast, 1=generate data, 3=testing
+		int max_step_length;	// Used for padding the output filename.
+		std::string path;
 
 	public:
-		N_body(int32_t count, std::string filename = "output");
+		N_body(int32_t count, int32_t mode=0);
+		//~N_body();
 		void iterate(void);
 		void simulate(int32_t steps);
-		void save_state(void);
+		void save_state(int32_t step);
 };
 
 
