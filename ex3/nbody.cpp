@@ -5,48 +5,126 @@
 #include <functional>
 #include "nbody.hpp"
 
+double delta_t;	// [s]
 
+
+//{{{ Randomness
 
 std::default_random_engine rng;
 std::uniform_real_distribution < double > x_distribution(0, 1);
 std::uniform_real_distribution < double > y_distribution(0, 1);
 std::uniform_real_distribution < double > m_distribution(0, 1);
+//}}}
 
-N_body::Particle::Position::Position(void) : x(x_distribution(rng)), y(y_distribution(rng)) {}
-N_body::Particle::Position::Position(double x, double y) : x(x), y(y) {}
-N_body::Particle::Speed::Speed(void) : x(0), y(0) {}
-N_body::Particle::Particle(void) : pos(), speed(), mass(m_distribution(rng)) {}
+//{{{ Constructors
 
-N_body::Particle::Path N_body::Particle::Position::operator-(const Position& other)
+N_body::Particle::Vec2d::Vec2d(void) : x(x_distribution(rng)), y(y_distribution(rng)) {}
+N_body::Particle::Vec2d::Vec2d(double x, double y) : x(x), y(y) {}
+N_body::Particle::Particle(void) : pos(), speed(0, 0), mass(m_distribution(rng)) {}
+N_body::N_body(int32_t count, std::string filename) : particles(count), forces(count, Particle::Force(0, 0)), filename(filename) {}
+//}}}
+
+//{{{ Operators
+
+N_body::Particle::Vec2d N_body::Particle::Vec2d::operator-(Vec2d other)
 {
-	Path r0(x-other.x, y-other.y);
-	return r0;
+	other.x = x-other.x;
+	other.y = y-other.y;
+	return other;
 }
-N_body::Particle::Path& operator*(double alpha, N_body::Particle::Path& path)
+N_body::Particle::Vec2d N_body::Particle::Vec2d::operator+(Vec2d other)
 {
-	path.x*=alpha;
-	path.y*=alpha;
-	return path;
+	other.x += x;
+	other.y += y;
+	return other;
 }
-double N_body::Particle::Position::operator^(int two)
+N_body::Particle::Vec2d& operator*(double alpha, N_body::Particle::Vec2d&vec)
+{
+	vec.x *= alpha;
+	vec.y *= alpha;
+	return vec;
+}
+N_body::Particle::Vec2d& operator/(N_body::Particle::Vec2d&vec, double alpha)
+{
+	vec.x /= alpha;
+	vec.y /= alpha;
+	return vec;
+}
+double N_body::Particle::Vec2d::operator^(int two)
 {
 #ifdef DEBUG
-	assert(two==2);
+		assert(two == 2);
 #endif
 	(void) two;
 	return x*x+y*y;
 }
+//}}}
 
-N_body::Particle::Path N_body::Particle::f(const Particle& other)
+N_body::Particle::Force N_body::Particle::force(const Particle& other)
 {
-	Path r0 = pos-other.pos;
+	Vec2d r0 = pos-other.pos;
+
 	return (-gamma*(mass*other.mass)/(r0^2))*r0;
 }
-//N_body::Particle::Path N_body::Particle::f(const Particle& other)
-//{
-//	Path r0 = pos-other.pos;
-//	return (-gamma*(mass*other.mass)/(r0^2))*r0;
-//}
+
+void N_body::iterate(void)
+{
+	//{{{ Generate the forces...
+
+	Particle::Force force(0, 0);
+
+	forces[0] = Particle::Force(0, 0);
+
+	for( uint32_t j = 1; j < particles.size(); j++ )	// Partial loop unrolling to avoid having to do zero initialisation
+	{
+		force = particles[0].force(particles[j]);
+		forces[0] = forces[0]+force;
+		forces[j] = forces[j]-force;
+	}
+	for( uint32_t i = 0; i < particles.size()-1; i++ )
+	{
+		for( uint32_t j = i+1; j < particles.size(); j++ )
+		{
+			force = particles[i].force(particles[j]);
+			forces[i] = forces[i]+force;
+			forces[j] = forces[j]-force;
+		}
+	}
+	//}}}
+
+	//{{{ ...and let the particles fly.
+
+	for( uint32_t i = 0; i < particles.size(); i++ )
+	{
+		particles[i].react(forces[i]);
+	}
+	//}}}
+}
+
+void N_body::simulate(int32_t steps)
+{
+	for(int32_t i=0; i<steps; i++)
+	{
+		iterate();
+
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -55,24 +133,23 @@ int main(int argc, char** argv)
 {
 	//{{{    Argument handling
 
-	rng.seed(std::random_device{}());
+	rng.seed(std::random_device {} ());
 	int32_t count;
-	double delta_t;
 	int32_t steps;
 	double x_max;
 	double y_max;
 	double m_max;
 	GetOpt::GetOpt_pp ops(argc, argv);
-	ops.exceptions(std::ios::failbit | std::ios::eofbit);
+	ops.exceptions(std::ios::failbit|std::ios::eofbit);
 	try
 	{
-		ops >> GetOpt::Option('c', "count", count, 1000);
-		ops >> GetOpt::Option('d', "delta_t", delta_t, 0.1);
-		ops >> GetOpt::Option('s', "steps", steps, 100);
+		ops>>GetOpt::Option('c', "count", count, 1000);
+		ops>>GetOpt::Option('d', "delta_t", delta_t, 0.1);
+		ops>>GetOpt::Option('s', "steps", steps, 100);
 
-		ops >> GetOpt::Option('x', "x_max", x_max, 1000.0);
-		ops >> GetOpt::Option('y', "y_max", y_max, 1000.0);
-		ops >> GetOpt::Option('m', "m_max", m_max, 1000.0);
+		ops>>GetOpt::Option('x', "x_max", x_max, 1000.0);
+		ops>>GetOpt::Option('y', "y_max", y_max, 1000.0);
+		ops>>GetOpt::Option('m', "m_max", m_max, 1000.0);
 //#ifdef VECTORISE
 //		ops >> GetOpt::Option('t', "threads", num_threads, 3);
 //#endif
@@ -82,22 +159,23 @@ int main(int argc, char** argv)
 	}
 	catch(GetOpt::GetOptEx ex)
 	{
-		std::cerr << "Error in arguments" << std::endl;
-		std::cerr << "Usage: "<<argv[0]<<" [options]"<<std::endl;
-		std::cerr << "Options:"<<std::endl;
-		std::cerr << "-s|--steps   <NUM>: Set the number of simulation steps."<<std::endl;
-		std::cerr << "-r|--radius  <NUM>: Set the radius of the stimuli."<<std::endl;
-		std::cerr << "-h|--heat    <NUM>: Set the heat of the stimuli."<<std::endl;
+		std::cerr<<"Error in arguments"<<std::endl;
+		std::cerr<<"Usage: "<<argv[0]<<" [options]"<<std::endl;
+		std::cerr<<"Options:"<<std::endl;
+		std::cerr<<"-s|--steps   <NUM>: Set the number of simulation steps."<<std::endl;
+		std::cerr<<"-r|--radius  <NUM>: Set the radius of the stimuli."<<std::endl;
+		std::cerr<<"-h|--heat    <NUM>: Set the heat of the stimuli."<<std::endl;
+
 //#ifdef VECTORISE
 //		std::cerr << "-t|--threads <NUM>:    Set the number of threads that are started for the computation of the multiplication."<<std::endl;
 //#endif
 		return -1;
 	}
 	//}}}
+
 	std::cout<<"hello word!"<<std::endl;
-	//std::cout<<x_distribution<<std::endl;
 	N_body foo(count);
-	for(int i=0; i < 5; i++)
+	for( int i = 0; i < 5; i++ )
 		std::cout<<"( "<<foo.particles[i].pos.x<<" | "<<foo.particles[i].pos.y<<" )"<<std::endl;
 	return 0;
 }
