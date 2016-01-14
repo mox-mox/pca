@@ -13,8 +13,40 @@ std::uniform_real_distribution < double > y_distribution(0, 1);
 std::uniform_real_distribution < double > m_distribution(0, 1);
 
 N_body::Particle::Position::Position(void) : x(x_distribution(rng)), y(y_distribution(rng)) {}
+N_body::Particle::Position::Position(double x, double y) : x(x), y(y) {}
 N_body::Particle::Speed::Speed(void) : x(0), y(0) {}
 N_body::Particle::Particle(void) : pos(), speed(), mass(m_distribution(rng)) {}
+
+N_body::Particle::Path N_body::Particle::Position::operator-(const Position& other)
+{
+	Path r0(x-other.x, y-other.y);
+	return r0;
+}
+N_body::Particle::Path& operator*(double alpha, N_body::Particle::Path& path)
+{
+	path.x*=alpha;
+	path.y*=alpha;
+	return path;
+}
+double N_body::Particle::Position::operator^(int two)
+{
+#ifdef DEBUG
+	assert(two==2);
+#endif
+	(void) two;
+	return x*x+y*y;
+}
+
+N_body::Particle::Path N_body::Particle::f(const Particle& other)
+{
+	Path r0 = pos-other.pos;
+	return (-gamma*(mass*other.mass)/(r0^2))*r0;
+}
+//N_body::Particle::Path N_body::Particle::f(const Particle& other)
+//{
+//	Path r0 = pos-other.pos;
+//	return (-gamma*(mass*other.mass)/(r0^2))*r0;
+//}
 
 
 
