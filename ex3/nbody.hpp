@@ -15,8 +15,10 @@ class N_body
 				double y;
 				Vec2d(void);
 				Vec2d(double x, double y);
+				Vec2d(const Vec2d& other);
 				Vec2d operator-(Vec2d other);
 				Vec2d operator+(Vec2d other);
+				Vec2d operator=(const Vec2d& other);
 				double operator^(int);
 			};
 			typedef Vec2d Position;																// [{m, m}]
@@ -58,8 +60,8 @@ class N_body
 
 
 
-N_body::Particle::Vec2d& operator*(double alpha, N_body::Particle::Vec2d&vec);
-N_body::Particle::Vec2d& operator/(N_body::Particle::Vec2d&vec, double alpha);
+N_body::Particle::Vec2d operator*(double alpha, N_body::Particle::Vec2d vec);
+N_body::Particle::Vec2d operator/(N_body::Particle::Vec2d vec, double alpha);
 
 
 
@@ -74,7 +76,9 @@ inline void N_body::Particle::v(Acceleration acceleration)
 }
 inline void N_body::Particle::s(void)
 {
-	pos = pos+delta_t*speed;
+	//std::cout<<"		Old pos:  ( "<<pos.x<<" | "<<pos.y<<" )"<<"Old speed:  ( "<<speed.x<<" | "<<speed.y<<" )"<<std::endl;
+	//std::cout<<"		New pos:  ( "<<((delta_t*speed)).x<<" | "<<((delta_t*speed)).y<<" )"<<std::endl;
+	pos = pos+(delta_t*speed);
 }
 inline void N_body::Particle::react(const Force& force)
 {
